@@ -39,8 +39,11 @@ public final class Settings {
     private final List<String> extraClimbableBlockIds;
     private final boolean climbingMelee;
     private final boolean climbingRanged;
+    private final boolean climbingItemBlocklist;
+    private final List<String> blockedItemIds;
     private Set<Item> carriedItems = Collections.emptySet();
     private Set<Block> extraClimbableBlocks = Collections.emptySet();
+    private Set<Item> blockedItems = Collections.emptySet();
     private boolean resolved;
     private final Map<MessageText, String> messages;
     private final ConfigProblems problems;
@@ -59,6 +62,8 @@ public final class Settings {
         this.extraClimbableBlockIds = b.extraClimbableBlockIds;
         this.climbingMelee = b.climbingMelee;
         this.climbingRanged = b.climbingRanged;
+        this.climbingItemBlocklist = b.climbingItemBlocklist;
+        this.blockedItemIds = b.blockedItemIds;
         this.messages = Collections.unmodifiableMap(new EnumMap<>(b.messages));
         this.problems = b.problems;
     }
@@ -107,6 +112,8 @@ public final class Settings {
         b.extraClimbableBlockIds = Options.EXTRA_CLIMBABLE_BLOCKS.read(config);
         b.climbingMelee = Options.CLIMBING_MELEE.read(config, problems);
         b.climbingRanged = Options.CLIMBING_RANGED.read(config, problems);
+        b.climbingItemBlocklist = Options.CLIMBING_ITEM_BLOCKLIST.read(config, problems);
+        b.blockedItemIds = Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.read(config);
         return b.build();
     }
 
@@ -163,6 +170,8 @@ public final class Settings {
         carriedItems = RegistryIds.resolve(ForgeRegistries.ITEMS, carriedItemIds, Options.CARRIED_ITEMS.path(), "item", problems);
         extraClimbableBlocks = RegistryIds.resolve(ForgeRegistries.BLOCKS, extraClimbableBlockIds,
                 Options.EXTRA_CLIMBABLE_BLOCKS.path(), "block", problems);
+        blockedItems = RegistryIds.resolve(ForgeRegistries.ITEMS, blockedItemIds, Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.path(), "item",
+                problems);
         resolved = true;
     }
 
@@ -193,6 +202,20 @@ public final class Settings {
         return climbingRanged;
     }
 
+    public boolean climbingItemBlocklist() {
+        return climbingItemBlocklist;
+    }
+
+    /** The climbing item blocklist as written, before resolution. */
+    public List<String> blockedItemIds() {
+        return blockedItemIds;
+    }
+
+    /** Items in the climbing item blocklist; empty until {@link #resolveRegistryEntries()} has run. */
+    public Set<Item> blockedItems() {
+        return blockedItems;
+    }
+
     public String message(MessageText message) {
         String text = messages.get(message);
         return text != null ? text : message.defaultText();
@@ -217,6 +240,8 @@ public final class Settings {
         List<String> extraClimbableBlockIds = Options.EXTRA_CLIMBABLE_BLOCKS.defaults();
         boolean climbingMelee = Options.CLIMBING_MELEE.defaultValue;
         boolean climbingRanged = Options.CLIMBING_RANGED.defaultValue;
+        boolean climbingItemBlocklist = Options.CLIMBING_ITEM_BLOCKLIST.defaultValue;
+        List<String> blockedItemIds = Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.defaults();
         final Map<MessageText, String> messages = new EnumMap<>(MessageText.class);
         final ConfigProblems problems = new ConfigProblems();
 

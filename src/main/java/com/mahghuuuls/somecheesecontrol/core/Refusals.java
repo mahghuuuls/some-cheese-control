@@ -24,7 +24,8 @@ public final class Refusals {
 
     /**
      * Sends the client the server's truth after the mod changed something the client shows, when no
-     * refusal message belongs to it (a pickup into a hand, several drops at once).
+     * refusal message belongs to it (a pickup into a hand, several drops at once), or when a refusal
+     * already decided repeats (the later steps of one refused right click).
      */
     public static void correctClient(EntityPlayerMP player, Resync resync) {
         resync.sendTo(player);

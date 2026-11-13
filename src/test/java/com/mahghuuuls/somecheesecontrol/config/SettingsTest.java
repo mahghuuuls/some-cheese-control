@@ -1,6 +1,9 @@
 package com.mahghuuuls.somecheesecontrol.config;
 
+import net.minecraftforge.common.config.Configuration;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -9,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * The shipped defaults and their validation. Reading a real configuration file needs FML's launch
  * data, so these tests check the single option definitions that both the file reader and the
- * defaults use.
+ * defaults use, and read an in-memory configuration where a key must be told from another.
  */
 class SettingsTest {
 
@@ -18,11 +21,13 @@ class SettingsTest {
         assertTrue(Options.UNSUPPORTED_LIQUID.defaultValue, "every feature is on after installation");
         assertTrue(Options.AIRBORNE_EMPTYING.defaultValue, "every feature is on after installation");
         assertTrue(Options.CARRYING.defaultValue, "every feature is on after installation");
-        assertEquals(java.util.Arrays.asList("minecraft:water_bucket", "minecraft:lava_bucket"), Options.CARRIED_ITEMS.defaults(),
+        assertEquals(Arrays.asList("minecraft:water_bucket", "minecraft:lava_bucket"), Options.CARRIED_ITEMS.defaults(),
                 "water and lava buckets are carried in a hand by default");
         assertEquals(AllowedHand.EITHER, Options.ALLOWED_HAND.defaultValue, "either hand by default");
         assertTrue(Options.CLIMBING_MELEE.defaultValue, "every feature is on after installation");
         assertTrue(Options.CLIMBING_RANGED.defaultValue, "every feature is on after installation");
+        assertTrue(Options.CLIMBING_ITEM_BLOCKLIST.defaultValue, "every feature is on after installation");
+        assertTrue(Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.defaults().isEmpty(), "the climbing item blocklist is empty by default");
         assertEquals(0.5, Options.CLIMBING_RELEASE_DELAY.defaultValue, "half a second after letting go");
         assertEquals(0.0, Options.CLIMBING_RELEASE_DELAY.min);
         assertEquals(5.0, Options.CLIMBING_RELEASE_DELAY.max);
@@ -45,6 +50,7 @@ class SettingsTest {
         assertEquals(Options.ALLOWED_HAND.defaultValue, defaults.allowedHand());
         assertEquals(Options.CLIMBING_MELEE.defaultValue, defaults.climbingMelee());
         assertEquals(Options.CLIMBING_RANGED.defaultValue, defaults.climbingRanged());
+        assertEquals(Options.CLIMBING_ITEM_BLOCKLIST.defaultValue, defaults.climbingItemBlocklist());
         assertEquals(10, defaults.climbingReleaseDelayTicks(), "0.5 seconds is 10 ticks");
         assertEquals(Options.MESSAGES_ENABLED.defaultValue, defaults.messagesEnabled());
         assertEquals(Settings.toMillis(Options.MESSAGE_INTERVAL.defaultValue), defaults.messageIntervalMillis());
@@ -77,8 +83,21 @@ class SettingsTest {
         assertEquals("handOnlyCarrying.allowedHand", Options.ALLOWED_HAND.path());
         assertEquals("climbingMelee.enabled", Options.CLIMBING_MELEE.path());
         assertEquals("climbingRanged.enabled", Options.CLIMBING_RANGED.path());
+        assertEquals("climbingItemBlocklist.enabled", Options.CLIMBING_ITEM_BLOCKLIST.path());
+        assertEquals("climbingItemBlocklist.items", Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.path());
         assertEquals("climbing.releaseDelaySeconds", Options.CLIMBING_RELEASE_DELAY.path());
         assertEquals("climbing.extraClimbableBlocks", Options.EXTRA_CLIMBABLE_BLOCKS.path());
+    }
+
+    @Test
+    void theItemBlocklistSwitchAndListAreReadFromTheirOwnKeys() {
+        Configuration config = new Configuration();
+        config.get("climbingItemBlocklist", "enabled", true).set(false);
+        config.get("climbingItemBlocklist", "items", new String[0]).set(new String[]{"minecraft:lead", "nosuchmod:thing"});
+        Settings settings = Settings.read(config);
+        assertFalse(settings.climbingItemBlocklist());
+        assertTrue(settings.climbingRanged(), "the ranged switch is a separate key");
+        assertEquals(Arrays.asList("minecraft:lead", "nosuchmod:thing"), settings.blockedItemIds());
     }
 
     @Test

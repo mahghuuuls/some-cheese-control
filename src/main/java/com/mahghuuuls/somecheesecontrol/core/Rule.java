@@ -14,7 +14,8 @@ public enum Rule {
     AIRBORNE_EMPTYING(MessageText.AIRBORNE_EMPTYING, false),
     FORCED_DROP(MessageText.FORCED_DROP, false),
     CLIMBING_MELEE(MessageText.CLIMBING_MELEE, false),
-    CLIMBING_RANGED(MessageText.CLIMBING_RANGED, false);
+    CLIMBING_RANGED(MessageText.CLIMBING_RANGED, false),
+    CLIMBING_ITEM(MessageText.CLIMBING_ITEM, false);
 
     private final MessageText message;
     private final boolean appliesInCreative;

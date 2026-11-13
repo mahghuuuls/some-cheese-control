@@ -23,6 +23,7 @@ final class Options {
     static final String CLIMBING_STATE_CATEGORY = "climbing";
     static final String CLIMBING_MELEE_CATEGORY = "climbingMelee";
     static final String CLIMBING_RANGED_CATEGORY = "climbingRanged";
+    static final String CLIMBING_ITEM_BLOCKLIST_CATEGORY = "climbingItemBlocklist";
 
     static final BooleanOption RESTRICTIONS_IN_CREATIVE = new BooleanOption(GENERAL, "restrictionsApplyInCreative", false,
             "Apply the player restrictions to players in Creative mode too. Bed-explosion prevention always applies. Restart required.");
@@ -50,8 +51,13 @@ final class Options {
     static final StringListOption EXTRA_CLIMBABLE_BLOCKS = new StringListOption(CLIMBING_STATE_CATEGORY, "extraClimbableBlocks",
             new String[0],
             "Blocks that also count as climbable, one modid:name per line. Ladders, vines and modded blocks that declare themselves climbable count already. Example: minecraft:iron_bars. Restart required.");
+    static final StringListOption CLIMBING_ITEM_BLOCKLIST_ITEMS = new StringListOption(CLIMBING_ITEM_BLOCKLIST_CATEGORY, "items",
+            new String[0],
+            "Items that cannot be used in any way while on a ladder or vine above the ground and for the release delay after letting go: right click in the air, on a block or on an entity, or holding use. One modid:name per line; empty by default. Example: minecraft:lead. Used only when enabled is true. Restart required.");
     static final BooleanOption CLIMBING_MELEE = new BooleanOption(CLIMBING_MELEE_CATEGORY, "enabled", true,
             "Refuse melee attacks, with either hand, while on a ladder or vine above the ground and for the release delay after letting go. Restart required.");
+    static final BooleanOption CLIMBING_ITEM_BLOCKLIST = new BooleanOption(CLIMBING_ITEM_BLOCKLIST_CATEGORY, "enabled", true,
+            "Refuse every use of the items in the list below while climbing. With an empty list this adds nothing. Restart required.");
     static final BooleanOption CLIMBING_RANGED = new BooleanOption(CLIMBING_RANGED_CATEGORY, "enabled", true,
             "Refuse bows, crossbows, throwing weapons, thrown items (snowballs, eggs, ender pearls, splash and lingering potions, experience bottles, dynamite) and fishing rods while on a ladder or vine above the ground and for the release delay after letting go. A draw, load or charge in progress stops without firing and without cost. Restart required.");
 

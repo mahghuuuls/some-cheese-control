@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * One more inventory resend, a short time after the server stopped a draw.
+ * One more inventory resend, a short time after the server stopped or refused a use with a duration.
  *
  * <p>The client learns of the stop only one round trip later. A release in that window makes the
  * client spend an arrow on its own while the server spends nothing; the late resend shows the true
