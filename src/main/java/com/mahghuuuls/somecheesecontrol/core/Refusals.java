@@ -3,7 +3,6 @@ package com.mahghuuuls.somecheesecontrol.core;
 import com.mahghuuuls.somecheesecontrol.config.Settings;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.play.server.SPacketBlockChange;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fluids.FluidStack;
@@ -24,6 +23,14 @@ public final class Refusals {
     }
 
     /**
+     * Sends the client the server's truth after the mod changed something the client shows, when no
+     * refusal message belongs to it (a pickup into a hand, several drops at once).
+     */
+    public static void correctClient(EntityPlayerMP player, Resync resync) {
+        resync.sendTo(player);
+    }
+
+    /**
      * @param player  the refused player, on the logical server
      * @param rule    the rule that refused
      * @param resync  what the client may have predicted
@@ -37,7 +44,7 @@ public final class Refusals {
                         settings.messageIntervalMillis())) {
             player.sendStatusMessage(new TextComponentString(settings.message(rule.message())), true);
         }
-        resend(player, resync);
+        resync.sendTo(player);
         if (DiagnosticLog.enabled()) {
             FluidStack fluid = item.isEmpty() ? null : FluidUtil.getFluidContained(item);
             DiagnosticLog.decision("refuse",
@@ -47,15 +54,6 @@ public final class Refusals {
                     "item", item.isEmpty() ? "none" : item.getItem().getRegistryName(),
                     "fluid", fluid != null ? fluid.getFluid().getName() : "none",
                     "target", target != null ? target : "none");
-        }
-    }
-
-    private static void resend(EntityPlayerMP player, Resync resync) {
-        if (resync.inventoryNeeded()) {
-            player.sendContainerToPlayer(player.inventoryContainer);
-        }
-        for (BlockPos pos : resync.blocks()) {
-            player.connection.sendPacket(new SPacketBlockChange(player.world, pos));
         }
     }
 }

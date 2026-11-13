@@ -1,10 +1,13 @@
 package com.mahghuuuls.somecheesecontrol.config;
 
+import net.minecraft.item.Item;
 import net.minecraftforge.common.config.Configuration;
 
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The validated configuration, read once at startup and never changed while the game runs.
@@ -12,6 +15,10 @@ import java.util.Map;
  * <p>With {@link Options} and {@link MessageText}, this class is the only owner of option names,
  * defaults, ranges, message texts and validation. Everything else reads the snapshot returned by
  * {@link #get()}.</p>
+ *
+ * <p>The snapshot is completed in two steps: values are read at pre-initialization, and the item
+ * ids are turned into items by {@link #resolveRegistryEntries()} at initialization, once every item
+ * is registered. After that it never changes.</p>
  */
 public final class Settings {
 
@@ -23,6 +30,11 @@ public final class Settings {
     private final boolean diagnosticLogging;
     private final boolean unsupportedLiquidPlacement;
     private final boolean airborneEmptying;
+    private final boolean handOnlyCarrying;
+    private final List<String> carriedItemIds;
+    private final AllowedHand allowedHand;
+    private Set<Item> carriedItems = Collections.emptySet();
+    private boolean resolved;
     private final Map<MessageText, String> messages;
     private final ConfigProblems problems;
 
@@ -33,6 +45,9 @@ public final class Settings {
         this.diagnosticLogging = b.diagnosticLogging;
         this.unsupportedLiquidPlacement = b.unsupportedLiquidPlacement;
         this.airborneEmptying = b.airborneEmptying;
+        this.handOnlyCarrying = b.handOnlyCarrying;
+        this.carriedItemIds = b.carriedItemIds;
+        this.allowedHand = b.allowedHand;
         this.messages = Collections.unmodifiableMap(new EnumMap<>(b.messages));
         this.problems = b.problems;
     }
@@ -74,6 +89,9 @@ public final class Settings {
         }
         b.unsupportedLiquidPlacement = Options.UNSUPPORTED_LIQUID.read(config, problems);
         b.airborneEmptying = Options.AIRBORNE_EMPTYING.read(config, problems);
+        b.handOnlyCarrying = Options.CARRYING.read(config, problems);
+        b.carriedItemIds = Options.CARRIED_ITEMS.read(config);
+        b.allowedHand = Options.ALLOWED_HAND.read(config, problems);
         return b.build();
     }
 
@@ -105,6 +123,36 @@ public final class Settings {
         return airborneEmptying;
     }
 
+    public boolean handOnlyCarrying() {
+        return handOnlyCarrying;
+    }
+
+    /** The configured ids as written. */
+    public List<String> carriedItemIds() {
+        return carriedItemIds;
+    }
+
+    /**
+     * Turns configured item ids into items and records unknown ones as problems. Call once, at
+     * initialization, before any feature reads the items and before the problems are logged.
+     */
+    public void resolveRegistryEntries() {
+        if (resolved) {
+            return;
+        }
+        carriedItems = ItemIds.resolve(carriedItemIds, Options.CARRIED_ITEMS.path(), problems);
+        resolved = true;
+    }
+
+    /** The restricted carried items; empty until {@link #resolveRegistryEntries()} has run. */
+    public Set<Item> carriedItems() {
+        return carriedItems;
+    }
+
+    public AllowedHand allowedHand() {
+        return allowedHand;
+    }
+
     public String message(MessageText message) {
         String text = messages.get(message);
         return text != null ? text : message.defaultText();
@@ -122,6 +170,9 @@ public final class Settings {
         boolean diagnosticLogging = Options.DIAGNOSTIC_LOGGING.defaultValue;
         boolean unsupportedLiquidPlacement = Options.UNSUPPORTED_LIQUID.defaultValue;
         boolean airborneEmptying = Options.AIRBORNE_EMPTYING.defaultValue;
+        boolean handOnlyCarrying = Options.CARRYING.defaultValue;
+        List<String> carriedItemIds = Options.CARRIED_ITEMS.defaults();
+        AllowedHand allowedHand = Options.ALLOWED_HAND.defaultValue;
         final Map<MessageText, String> messages = new EnumMap<>(MessageText.class);
         final ConfigProblems problems = new ConfigProblems();
 

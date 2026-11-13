@@ -3,6 +3,10 @@ package com.mahghuuuls.somecheesecontrol.config;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Every option of the configuration file: its category, key, default, range and comment.
  *
@@ -15,6 +19,7 @@ final class Options {
     static final String MESSAGE_TEXTS = "general.messageTexts";
     static final String UNSUPPORTED_LIQUID_CATEGORY = "unsupportedLiquidPlacement";
     static final String AIRBORNE_EMPTYING_CATEGORY = "airborneEmptying";
+    static final String CARRYING_CATEGORY = "handOnlyCarrying";
 
     static final BooleanOption RESTRICTIONS_IN_CREATIVE = new BooleanOption(GENERAL, "restrictionsApplyInCreative", false,
             "Apply the player restrictions to players in Creative mode too. Bed-explosion prevention always applies. Restart required.");
@@ -28,6 +33,14 @@ final class Options {
             "Refuse emptying a bucket where the block below the liquid gives no support (air, or a block you can walk through such as grass or a torch). Liquid below counts as support. Restart required.");
     static final BooleanOption AIRBORNE_EMPTYING = new BooleanOption(AIRBORNE_EMPTYING_CATEGORY, "enabled", true,
             "Refuse emptying a bucket while in the air: jumping, falling, holding on to a ladder above air, or riding a vehicle that is in the air. Swimming and standing on the ground are fine. Filling a bucket is never refused. Restart required.");
+
+    static final BooleanOption CARRYING = new BooleanOption(CARRYING_CATEGORY, "enabled", true,
+            "Drop the listed items when they are anywhere in the player's inventory except an allowed hand. Backpacks and chests are not checked. Restart required.");
+    static final StringListOption CARRIED_ITEMS = new StringListOption(CARRYING_CATEGORY, "items",
+            new String[] {"minecraft:water_bucket", "minecraft:lava_bucket"},
+            "Items that may only be carried in an allowed hand, one modid:name per line. Example: minecraft:water_bucket. Restart required.");
+    static final AllowedHandOption ALLOWED_HAND = new AllowedHandOption(CARRYING_CATEGORY, "allowedHand", AllowedHand.EITHER,
+            "Where the listed items may be carried: main (the selected hotbar slot), off (the offhand) or either. Restart required.");
 
     private Options() {
     }
@@ -100,6 +113,69 @@ final class Options {
                 return defaultValue;
             }
             return problems.clamp(path(), value, min, max);
+        }
+    }
+
+    static final class StringListOption {
+        final String category;
+        final String key;
+        final String[] defaultValue;
+        final String comment;
+
+        StringListOption(String category, String key, String[] defaultValue, String comment) {
+            this.category = category;
+            this.key = key;
+            this.defaultValue = defaultValue.clone();
+            this.comment = comment;
+        }
+
+        String path() {
+            return category + "." + key;
+        }
+
+        List<String> defaults() {
+            return Collections.unmodifiableList(Arrays.asList(defaultValue.clone()));
+        }
+
+        List<String> read(Configuration config) {
+            String[] values = config.getStringList(key, category, defaultValue, comment);
+            return Collections.unmodifiableList(Arrays.asList(values));
+        }
+    }
+
+    static final class AllowedHandOption {
+        final String category;
+        final String key;
+        final AllowedHand defaultValue;
+        final String comment;
+
+        AllowedHandOption(String category, String key, AllowedHand defaultValue, String comment) {
+            this.category = category;
+            this.key = key;
+            this.defaultValue = defaultValue;
+            this.comment = comment;
+        }
+
+        String path() {
+            return category + "." + key;
+        }
+
+        AllowedHand read(Configuration config, ConfigProblems problems) {
+            String value = config.getString(key, category, defaultValue.configValue(), comment, AllowedHand.configValues());
+            return validate(value, problems);
+        }
+
+        /**
+         * The hand for {@code value}. A value that allows no hand would make every listed item drop at
+         * once and forever, so it is an error and the default is used instead.
+         */
+        AllowedHand validate(String value, ConfigProblems problems) {
+            AllowedHand hand = AllowedHand.parse(value);
+            if (hand == null) {
+                problems.addError(path() + " = " + value + " allows no hand; using " + defaultValue.configValue());
+                return defaultValue;
+            }
+            return hand;
         }
     }
 

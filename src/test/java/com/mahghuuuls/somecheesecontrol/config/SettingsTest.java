@@ -17,6 +17,10 @@ class SettingsTest {
     void shippedDefaultsMatchTheRequirements() {
         assertTrue(Options.UNSUPPORTED_LIQUID.defaultValue, "every feature is on after installation");
         assertTrue(Options.AIRBORNE_EMPTYING.defaultValue, "every feature is on after installation");
+        assertTrue(Options.CARRYING.defaultValue, "every feature is on after installation");
+        assertEquals(java.util.Arrays.asList("minecraft:water_bucket", "minecraft:lava_bucket"), Options.CARRIED_ITEMS.defaults(),
+                "water and lava buckets are carried in a hand by default");
+        assertEquals(AllowedHand.EITHER, Options.ALLOWED_HAND.defaultValue, "either hand by default");
         assertTrue(Options.MESSAGES_ENABLED.defaultValue, "messages are on after installation");
         assertEquals(2.0, Options.MESSAGE_INTERVAL.defaultValue, "one message every 2 seconds at most");
         assertEquals(0.0, Options.MESSAGE_INTERVAL.min);
@@ -30,6 +34,9 @@ class SettingsTest {
         Settings defaults = Settings.defaults();
         assertEquals(Options.UNSUPPORTED_LIQUID.defaultValue, defaults.unsupportedLiquidPlacement());
         assertEquals(Options.AIRBORNE_EMPTYING.defaultValue, defaults.airborneEmptying());
+        assertEquals(Options.CARRYING.defaultValue, defaults.handOnlyCarrying());
+        assertEquals(Options.CARRIED_ITEMS.defaults(), defaults.carriedItemIds());
+        assertEquals(Options.ALLOWED_HAND.defaultValue, defaults.allowedHand());
         assertEquals(Options.MESSAGES_ENABLED.defaultValue, defaults.messagesEnabled());
         assertEquals(Settings.toMillis(Options.MESSAGE_INTERVAL.defaultValue), defaults.messageIntervalMillis());
         assertEquals(Options.RESTRICTIONS_IN_CREATIVE.defaultValue, defaults.restrictionsApplyInCreative());
@@ -56,6 +63,9 @@ class SettingsTest {
     void eachFeatureHasItsOwnCategoryAndSwitch() {
         assertEquals("unsupportedLiquidPlacement.enabled", Options.UNSUPPORTED_LIQUID.path());
         assertEquals("airborneEmptying.enabled", Options.AIRBORNE_EMPTYING.path());
+        assertEquals("handOnlyCarrying.enabled", Options.CARRYING.path());
+        assertEquals("handOnlyCarrying.items", Options.CARRIED_ITEMS.path());
+        assertEquals("handOnlyCarrying.allowedHand", Options.ALLOWED_HAND.path());
     }
 
     @Test

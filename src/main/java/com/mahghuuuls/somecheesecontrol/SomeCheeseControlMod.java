@@ -2,6 +2,7 @@ package com.mahghuuuls.somecheesecontrol;
 
 import com.mahghuuuls.somecheesecontrol.config.Settings;
 import com.mahghuuuls.somecheesecontrol.core.ServerState;
+import com.mahghuuuls.somecheesecontrol.feature.carry.CarryFeature;
 import com.mahghuuuls.somecheesecontrol.feature.liquid.LiquidPlacementFeature;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -26,17 +27,24 @@ public class SomeCheeseControlMod {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        Settings settings = Settings.load(new Configuration(event.getSuggestedConfigurationFile()));
-        for (String problem : settings.problems().all()) {
-            LOGGER.warn("Configuration: {}", problem);
-        }
+        Settings.load(new Configuration(event.getSuggestedConfigurationFile()));
     }
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         Settings settings = Settings.get();
+        settings.resolveRegistryEntries();
+        for (String error : settings.problems().errors()) {
+            LOGGER.error("Configuration: {}", error);
+        }
+        for (String warning : settings.problems().warnings()) {
+            LOGGER.warn("Configuration: {}", warning);
+        }
         if (LiquidPlacementFeature.isNeeded(settings)) {
             MinecraftForge.EVENT_BUS.register(new LiquidPlacementFeature());
+        }
+        if (settings.handOnlyCarrying()) {
+            MinecraftForge.EVENT_BUS.register(new CarryFeature(settings));
         }
     }
 

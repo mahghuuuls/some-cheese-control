@@ -4,21 +4,42 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** Configuration entries that were invalid and how they were handled, collected while reading. */
+/**
+ * Configuration entries that were invalid and how they were handled, collected while reading.
+ *
+ * <p>A warning is a skipped or adjusted entry. An error is a setting that cannot work as written and
+ * was replaced, such as an allowed-hand value that allows no hand.</p>
+ */
 public final class ConfigProblems {
 
-    private final List<String> problems = new ArrayList<>();
+    private final List<String> warnings = new ArrayList<>();
+    private final List<String> errors = new ArrayList<>();
 
-    public void add(String problem) {
-        problems.add(problem);
+    public void add(String warning) {
+        warnings.add(warning);
     }
 
+    public void addError(String error) {
+        errors.add(error);
+    }
+
+    public List<String> warnings() {
+        return Collections.unmodifiableList(warnings);
+    }
+
+    public List<String> errors() {
+        return Collections.unmodifiableList(errors);
+    }
+
+    /** Errors first, then warnings. */
     public List<String> all() {
-        return Collections.unmodifiableList(problems);
+        List<String> all = new ArrayList<>(errors);
+        all.addAll(warnings);
+        return Collections.unmodifiableList(all);
     }
 
     public boolean isEmpty() {
-        return problems.isEmpty();
+        return warnings.isEmpty() && errors.isEmpty();
     }
 
     /**

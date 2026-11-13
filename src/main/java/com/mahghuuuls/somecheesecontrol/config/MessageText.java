@@ -8,7 +8,8 @@ package com.mahghuuuls.somecheesecontrol.config;
 public enum MessageText {
 
     UNSUPPORTED_LIQUID("unsupportedLiquid", "You cannot place liquid without support below."),
-    AIRBORNE_EMPTYING("airborneEmptying", "You cannot empty a bucket while in the air.");
+    AIRBORNE_EMPTYING("airborneEmptying", "You cannot empty a bucket while in the air."),
+    FORCED_DROP("forcedDrop", "You can only carry that item in your hand.");
 
     private final String key;
     private final String defaultText;
