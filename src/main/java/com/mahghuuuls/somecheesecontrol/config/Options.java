@@ -13,7 +13,8 @@ final class Options {
 
     static final String GENERAL = "general";
     static final String MESSAGE_TEXTS = "general.messageTexts";
-    static final String LIQUID = "liquidPlacement";
+    static final String UNSUPPORTED_LIQUID_CATEGORY = "unsupportedLiquidPlacement";
+    static final String AIRBORNE_EMPTYING_CATEGORY = "airborneEmptying";
 
     static final BooleanOption RESTRICTIONS_IN_CREATIVE = new BooleanOption(GENERAL, "restrictionsApplyInCreative", false,
             "Apply the player restrictions to players in Creative mode too. Bed-explosion prevention always applies. Restart required.");
@@ -23,8 +24,10 @@ final class Options {
             "Show a short action-bar message when an action is refused or an item is dropped. Restart required.");
     static final DoubleOption MESSAGE_INTERVAL = new DoubleOption(GENERAL, "messageIntervalSeconds", 2.0, 0.0, 10.0,
             "Shortest time between two messages to the same player, in seconds. Restart required.");
-    static final BooleanOption UNSUPPORTED_LIQUID = new BooleanOption(LIQUID, "enabled", true,
+    static final BooleanOption UNSUPPORTED_LIQUID = new BooleanOption(UNSUPPORTED_LIQUID_CATEGORY, "enabled", true,
             "Refuse emptying a bucket where the block below the liquid gives no support (air, or a block you can walk through such as grass or a torch). Liquid below counts as support. Restart required.");
+    static final BooleanOption AIRBORNE_EMPTYING = new BooleanOption(AIRBORNE_EMPTYING_CATEGORY, "enabled", true,
+            "Refuse emptying a bucket while in the air: jumping, falling, holding on to a ladder above air, or riding a vehicle that is in the air. Swimming and standing on the ground are fine. Filling a bucket is never refused. Restart required.");
 
     private Options() {
     }

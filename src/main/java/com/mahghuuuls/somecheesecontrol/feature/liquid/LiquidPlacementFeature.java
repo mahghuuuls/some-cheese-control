@@ -1,6 +1,8 @@
 package com.mahghuuuls.somecheesecontrol.feature.liquid;
 
+import com.mahghuuuls.somecheesecontrol.config.Settings;
 import com.mahghuuuls.somecheesecontrol.core.PlayerExemptions;
+import com.mahghuuuls.somecheesecontrol.core.PlayerSituation;
 import com.mahghuuuls.somecheesecontrol.core.Refusals;
 import com.mahghuuuls.somecheesecontrol.core.Resync;
 import com.mahghuuuls.somecheesecontrol.core.Rule;
@@ -20,13 +22,19 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 /**
- * Refuses emptying a player bucket where the block below the liquid gives no support.
+ * Refuses emptying a player bucket while the player is airborne, or where the block below the liquid
+ * gives no support. The two rules have their own switches.
  *
  * <p>{@link FillBucketEvent} fires before a bucket changes anything, for filling and emptying, and only
  * for player bucket use: dispensers never fire it. Cancelling it leaves the bucket and the world as
  * they were.</p>
  */
 public final class LiquidPlacementFeature {
+
+    /** True when either liquid placement rule is switched on, so the handler must be registered. */
+    public static boolean isNeeded(Settings settings) {
+        return settings.unsupportedLiquidPlacement() || settings.airborneEmptying();
+    }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onFillBucket(FillBucketEvent event) {
@@ -36,14 +44,21 @@ public final class LiquidPlacementFeature {
         }
         EntityPlayerMP player = (EntityPlayerMP) event.getEntityPlayer();
         ItemStack bucket = event.getEmptyBucket();
-        if (!isEmptying(bucket) || !PlayerExemptions.applies(player, Rule.UNSUPPORTED_LIQUID)) {
-            return;
-        }
         RayTraceResult target = event.getTarget();
-        if (target == null || target.typeOfHit != RayTraceResult.Type.BLOCK) {
+        if (!isEmptying(bucket) || target == null || target.typeOfHit != RayTraceResult.Type.BLOCK) {
             return;
         }
         BlockPos destination = destination(world, target, bucket);
+        Settings settings = Settings.get();
+        if (settings.airborneEmptying() && PlayerExemptions.applies(player, Rule.AIRBORNE_EMPTYING)
+                && PlayerSituation.isAirborne(player)) {
+            event.setCanceled(true);
+            Refusals.refuse(player, Rule.AIRBORNE_EMPTYING, Resync.inventoryAndBlocks(destination), bucket, destination);
+            return;
+        }
+        if (!settings.unsupportedLiquidPlacement() || !PlayerExemptions.applies(player, Rule.UNSUPPORTED_LIQUID)) {
+            return;
+        }
         BlockPos below = destination.down();
         IBlockState belowState = world.getBlockState(below);
         boolean supported = LiquidRules.isSupported(belowState.getMaterial().isLiquid(),

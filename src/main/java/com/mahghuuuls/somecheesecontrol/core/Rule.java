@@ -10,7 +10,8 @@ import com.mahghuuuls.somecheesecontrol.config.MessageText;
  */
 public enum Rule {
 
-    UNSUPPORTED_LIQUID(MessageText.UNSUPPORTED_LIQUID, false);
+    UNSUPPORTED_LIQUID(MessageText.UNSUPPORTED_LIQUID, false),
+    AIRBORNE_EMPTYING(MessageText.AIRBORNE_EMPTYING, false);
 
     private final MessageText message;
     private final boolean appliesInCreative;

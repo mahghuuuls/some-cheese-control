@@ -22,6 +22,7 @@ public final class Settings {
     private final long messageIntervalMillis;
     private final boolean diagnosticLogging;
     private final boolean unsupportedLiquidPlacement;
+    private final boolean airborneEmptying;
     private final Map<MessageText, String> messages;
     private final ConfigProblems problems;
 
@@ -31,6 +32,7 @@ public final class Settings {
         this.messageIntervalMillis = b.messageIntervalMillis;
         this.diagnosticLogging = b.diagnosticLogging;
         this.unsupportedLiquidPlacement = b.unsupportedLiquidPlacement;
+        this.airborneEmptying = b.airborneEmptying;
         this.messages = Collections.unmodifiableMap(new EnumMap<>(b.messages));
         this.problems = b.problems;
     }
@@ -71,6 +73,7 @@ public final class Settings {
             b.messages.put(message, text);
         }
         b.unsupportedLiquidPlacement = Options.UNSUPPORTED_LIQUID.read(config, problems);
+        b.airborneEmptying = Options.AIRBORNE_EMPTYING.read(config, problems);
         return b.build();
     }
 
@@ -98,6 +101,10 @@ public final class Settings {
         return unsupportedLiquidPlacement;
     }
 
+    public boolean airborneEmptying() {
+        return airborneEmptying;
+    }
+
     public String message(MessageText message) {
         String text = messages.get(message);
         return text != null ? text : message.defaultText();
@@ -114,6 +121,7 @@ public final class Settings {
         long messageIntervalMillis = toMillis(Options.MESSAGE_INTERVAL.defaultValue);
         boolean diagnosticLogging = Options.DIAGNOSTIC_LOGGING.defaultValue;
         boolean unsupportedLiquidPlacement = Options.UNSUPPORTED_LIQUID.defaultValue;
+        boolean airborneEmptying = Options.AIRBORNE_EMPTYING.defaultValue;
         final Map<MessageText, String> messages = new EnumMap<>(MessageText.class);
         final ConfigProblems problems = new ConfigProblems();
 

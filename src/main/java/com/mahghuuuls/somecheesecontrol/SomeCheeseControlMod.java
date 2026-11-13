@@ -35,7 +35,7 @@ public class SomeCheeseControlMod {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         Settings settings = Settings.get();
-        if (settings.unsupportedLiquidPlacement()) {
+        if (LiquidPlacementFeature.isNeeded(settings)) {
             MinecraftForge.EVENT_BUS.register(new LiquidPlacementFeature());
         }
     }

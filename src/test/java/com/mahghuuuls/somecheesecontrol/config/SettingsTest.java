@@ -16,6 +16,7 @@ class SettingsTest {
     @Test
     void shippedDefaultsMatchTheRequirements() {
         assertTrue(Options.UNSUPPORTED_LIQUID.defaultValue, "every feature is on after installation");
+        assertTrue(Options.AIRBORNE_EMPTYING.defaultValue, "every feature is on after installation");
         assertTrue(Options.MESSAGES_ENABLED.defaultValue, "messages are on after installation");
         assertEquals(2.0, Options.MESSAGE_INTERVAL.defaultValue, "one message every 2 seconds at most");
         assertEquals(0.0, Options.MESSAGE_INTERVAL.min);
@@ -28,6 +29,7 @@ class SettingsTest {
     void defaultsSnapshotUsesTheOptionDefinitions() {
         Settings defaults = Settings.defaults();
         assertEquals(Options.UNSUPPORTED_LIQUID.defaultValue, defaults.unsupportedLiquidPlacement());
+        assertEquals(Options.AIRBORNE_EMPTYING.defaultValue, defaults.airborneEmptying());
         assertEquals(Options.MESSAGES_ENABLED.defaultValue, defaults.messagesEnabled());
         assertEquals(Settings.toMillis(Options.MESSAGE_INTERVAL.defaultValue), defaults.messageIntervalMillis());
         assertEquals(Options.RESTRICTIONS_IN_CREATIVE.defaultValue, defaults.restrictionsApplyInCreative());
@@ -48,6 +50,12 @@ class SettingsTest {
         assertEquals("general", Options.MESSAGES_ENABLED.category);
         assertEquals("general", Options.MESSAGE_INTERVAL.category);
         assertTrue(Options.MESSAGE_TEXTS.startsWith("general."));
+    }
+
+    @Test
+    void eachFeatureHasItsOwnCategoryAndSwitch() {
+        assertEquals("unsupportedLiquidPlacement.enabled", Options.UNSUPPORTED_LIQUID.path());
+        assertEquals("airborneEmptying.enabled", Options.AIRBORNE_EMPTYING.path());
     }
 
     @Test
