@@ -3,6 +3,7 @@ package com.mahghuuuls.somecheesecontrol;
 import com.mahghuuuls.somecheesecontrol.config.Settings;
 import com.mahghuuuls.somecheesecontrol.core.ServerState;
 import com.mahghuuuls.somecheesecontrol.feature.carry.CarryFeature;
+import com.mahghuuuls.somecheesecontrol.feature.climbing.ClimbingFeature;
 import com.mahghuuuls.somecheesecontrol.feature.liquid.LiquidPlacementFeature;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -45,6 +46,9 @@ public class SomeCheeseControlMod {
         }
         if (settings.handOnlyCarrying()) {
             MinecraftForge.EVENT_BUS.register(new CarryFeature(settings));
+        }
+        if (ClimbingFeature.isNeeded(settings)) {
+            MinecraftForge.EVENT_BUS.register(new ClimbingFeature(settings));
         }
     }
 

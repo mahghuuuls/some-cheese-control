@@ -20,6 +20,8 @@ final class Options {
     static final String UNSUPPORTED_LIQUID_CATEGORY = "unsupportedLiquidPlacement";
     static final String AIRBORNE_EMPTYING_CATEGORY = "airborneEmptying";
     static final String CARRYING_CATEGORY = "handOnlyCarrying";
+    static final String CLIMBING_STATE_CATEGORY = "climbing";
+    static final String CLIMBING_MELEE_CATEGORY = "climbingMelee";
 
     static final BooleanOption RESTRICTIONS_IN_CREATIVE = new BooleanOption(GENERAL, "restrictionsApplyInCreative", false,
             "Apply the player restrictions to players in Creative mode too. Bed-explosion prevention always applies. Restart required.");
@@ -41,6 +43,14 @@ final class Options {
             "Items that may only be carried in an allowed hand, one modid:name per line. Example: minecraft:water_bucket. Restart required.");
     static final AllowedHandOption ALLOWED_HAND = new AllowedHandOption(CARRYING_CATEGORY, "allowedHand", AllowedHand.EITHER,
             "Where the listed items may be carried: main (the selected hotbar slot), off (the offhand) or either. Restart required.");
+
+    static final DoubleOption CLIMBING_RELEASE_DELAY = new DoubleOption(CLIMBING_STATE_CATEGORY, "releaseDelaySeconds", 0.5, 0.0, 5.0,
+            "How long the climbing restrictions still apply after letting go of a ladder or vine, in seconds. Standing on the ground ends them at once. Restart required.");
+    static final StringListOption EXTRA_CLIMBABLE_BLOCKS = new StringListOption(CLIMBING_STATE_CATEGORY, "extraClimbableBlocks",
+            new String[0],
+            "Blocks that also count as climbable, one modid:name per line. Ladders, vines and modded blocks that declare themselves climbable count already. Example: minecraft:iron_bars. Restart required.");
+    static final BooleanOption CLIMBING_MELEE = new BooleanOption(CLIMBING_MELEE_CATEGORY, "enabled", true,
+            "Refuse melee attacks, with either hand, while on a ladder or vine above the ground and for the release delay after letting go. Restart required.");
 
     private Options() {
     }

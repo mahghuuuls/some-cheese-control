@@ -36,12 +36,12 @@ class CarryOptionsTest {
     }
 
     @Test
-    void itemIdsMustBeLowercaseModidColonName() {
-        assertTrue(ItemIds.isWellFormed("minecraft:water_bucket"));
-        assertTrue(ItemIds.isWellFormed("some_mod:item.name/variant"));
-        assertFalse(ItemIds.isWellFormed("water_bucket"));
-        assertFalse(ItemIds.isWellFormed("Minecraft:Water_Bucket"));
-        assertFalse(ItemIds.isWellFormed("minecraft:"));
-        assertFalse(ItemIds.isWellFormed(""));
+    void registryIdsMustBeLowercaseModidColonName() {
+        assertTrue(RegistryIds.isWellFormed("minecraft:water_bucket"));
+        assertTrue(RegistryIds.isWellFormed("some_mod:item.name/variant"));
+        assertFalse(RegistryIds.isWellFormed("water_bucket"));
+        assertFalse(RegistryIds.isWellFormed("Minecraft:Water_Bucket"));
+        assertFalse(RegistryIds.isWellFormed("minecraft:"));
+        assertFalse(RegistryIds.isWellFormed(""));
     }
 }

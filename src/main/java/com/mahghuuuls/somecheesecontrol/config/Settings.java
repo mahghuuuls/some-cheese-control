@@ -1,7 +1,9 @@
 package com.mahghuuuls.somecheesecontrol.config;
 
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -33,7 +35,11 @@ public final class Settings {
     private final boolean handOnlyCarrying;
     private final List<String> carriedItemIds;
     private final AllowedHand allowedHand;
+    private final int climbingReleaseDelayTicks;
+    private final List<String> extraClimbableBlockIds;
+    private final boolean climbingMelee;
     private Set<Item> carriedItems = Collections.emptySet();
+    private Set<Block> extraClimbableBlocks = Collections.emptySet();
     private boolean resolved;
     private final Map<MessageText, String> messages;
     private final ConfigProblems problems;
@@ -48,6 +54,9 @@ public final class Settings {
         this.handOnlyCarrying = b.handOnlyCarrying;
         this.carriedItemIds = b.carriedItemIds;
         this.allowedHand = b.allowedHand;
+        this.climbingReleaseDelayTicks = b.climbingReleaseDelayTicks;
+        this.extraClimbableBlockIds = b.extraClimbableBlockIds;
+        this.climbingMelee = b.climbingMelee;
         this.messages = Collections.unmodifiableMap(new EnumMap<>(b.messages));
         this.problems = b.problems;
     }
@@ -92,11 +101,19 @@ public final class Settings {
         b.handOnlyCarrying = Options.CARRYING.read(config, problems);
         b.carriedItemIds = Options.CARRIED_ITEMS.read(config);
         b.allowedHand = Options.ALLOWED_HAND.read(config, problems);
+        b.climbingReleaseDelayTicks = toTicks(Options.CLIMBING_RELEASE_DELAY.read(config, problems));
+        b.extraClimbableBlockIds = Options.EXTRA_CLIMBABLE_BLOCKS.read(config);
+        b.climbingMelee = Options.CLIMBING_MELEE.read(config, problems);
         return b.build();
     }
 
     static long toMillis(double seconds) {
         return Math.round(seconds * 1000.0);
+    }
+
+    /** Seconds to game ticks (20 per second), rounded to the nearest tick. */
+    static int toTicks(double seconds) {
+        return (int) Math.round(seconds * 20.0);
     }
 
     public boolean restrictionsApplyInCreative() {
@@ -140,7 +157,9 @@ public final class Settings {
         if (resolved) {
             return;
         }
-        carriedItems = ItemIds.resolve(carriedItemIds, Options.CARRIED_ITEMS.path(), problems);
+        carriedItems = RegistryIds.resolve(ForgeRegistries.ITEMS, carriedItemIds, Options.CARRIED_ITEMS.path(), "item", problems);
+        extraClimbableBlocks = RegistryIds.resolve(ForgeRegistries.BLOCKS, extraClimbableBlockIds,
+                Options.EXTRA_CLIMBABLE_BLOCKS.path(), "block", problems);
         resolved = true;
     }
 
@@ -151,6 +170,20 @@ public final class Settings {
 
     public AllowedHand allowedHand() {
         return allowedHand;
+    }
+
+    /** The climbing release delay in game ticks. */
+    public int climbingReleaseDelayTicks() {
+        return climbingReleaseDelayTicks;
+    }
+
+    /** Configured extra climbable blocks; empty until {@link #resolveRegistryEntries()} has run. */
+    public Set<Block> extraClimbableBlocks() {
+        return extraClimbableBlocks;
+    }
+
+    public boolean climbingMelee() {
+        return climbingMelee;
     }
 
     public String message(MessageText message) {
@@ -173,6 +206,9 @@ public final class Settings {
         boolean handOnlyCarrying = Options.CARRYING.defaultValue;
         List<String> carriedItemIds = Options.CARRIED_ITEMS.defaults();
         AllowedHand allowedHand = Options.ALLOWED_HAND.defaultValue;
+        int climbingReleaseDelayTicks = toTicks(Options.CLIMBING_RELEASE_DELAY.defaultValue);
+        List<String> extraClimbableBlockIds = Options.EXTRA_CLIMBABLE_BLOCKS.defaults();
+        boolean climbingMelee = Options.CLIMBING_MELEE.defaultValue;
         final Map<MessageText, String> messages = new EnumMap<>(MessageText.class);
         final ConfigProblems problems = new ConfigProblems();
 

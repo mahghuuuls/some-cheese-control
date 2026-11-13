@@ -21,6 +21,11 @@ class SettingsTest {
         assertEquals(java.util.Arrays.asList("minecraft:water_bucket", "minecraft:lava_bucket"), Options.CARRIED_ITEMS.defaults(),
                 "water and lava buckets are carried in a hand by default");
         assertEquals(AllowedHand.EITHER, Options.ALLOWED_HAND.defaultValue, "either hand by default");
+        assertTrue(Options.CLIMBING_MELEE.defaultValue, "every feature is on after installation");
+        assertEquals(0.5, Options.CLIMBING_RELEASE_DELAY.defaultValue, "half a second after letting go");
+        assertEquals(0.0, Options.CLIMBING_RELEASE_DELAY.min);
+        assertEquals(5.0, Options.CLIMBING_RELEASE_DELAY.max);
+        assertTrue(Options.EXTRA_CLIMBABLE_BLOCKS.defaults().isEmpty(), "no extra climbable blocks by default");
         assertTrue(Options.MESSAGES_ENABLED.defaultValue, "messages are on after installation");
         assertEquals(2.0, Options.MESSAGE_INTERVAL.defaultValue, "one message every 2 seconds at most");
         assertEquals(0.0, Options.MESSAGE_INTERVAL.min);
@@ -37,6 +42,8 @@ class SettingsTest {
         assertEquals(Options.CARRYING.defaultValue, defaults.handOnlyCarrying());
         assertEquals(Options.CARRIED_ITEMS.defaults(), defaults.carriedItemIds());
         assertEquals(Options.ALLOWED_HAND.defaultValue, defaults.allowedHand());
+        assertEquals(Options.CLIMBING_MELEE.defaultValue, defaults.climbingMelee());
+        assertEquals(10, defaults.climbingReleaseDelayTicks(), "0.5 seconds is 10 ticks");
         assertEquals(Options.MESSAGES_ENABLED.defaultValue, defaults.messagesEnabled());
         assertEquals(Settings.toMillis(Options.MESSAGE_INTERVAL.defaultValue), defaults.messageIntervalMillis());
         assertEquals(Options.RESTRICTIONS_IN_CREATIVE.defaultValue, defaults.restrictionsApplyInCreative());
@@ -66,6 +73,9 @@ class SettingsTest {
         assertEquals("handOnlyCarrying.enabled", Options.CARRYING.path());
         assertEquals("handOnlyCarrying.items", Options.CARRIED_ITEMS.path());
         assertEquals("handOnlyCarrying.allowedHand", Options.ALLOWED_HAND.path());
+        assertEquals("climbingMelee.enabled", Options.CLIMBING_MELEE.path());
+        assertEquals("climbing.releaseDelaySeconds", Options.CLIMBING_RELEASE_DELAY.path());
+        assertEquals("climbing.extraClimbableBlocks", Options.EXTRA_CLIMBABLE_BLOCKS.path());
     }
 
     @Test
