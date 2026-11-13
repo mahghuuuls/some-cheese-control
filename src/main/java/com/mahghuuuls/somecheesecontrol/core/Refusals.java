@@ -1,0 +1,61 @@
+package com.mahghuuuls.somecheesecontrol.core;
+
+import com.mahghuuuls.somecheesecontrol.config.Settings;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.server.SPacketBlockChange;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
+
+import javax.annotation.Nullable;
+
+/**
+ * The single path every player restriction takes after it refuses an action.
+ *
+ * <p>One call sends the throttled action-bar message, sends the client the true inventory and blocks
+ * it may have predicted wrongly, and writes the diagnostic line. Features never send messages or
+ * packets themselves, so the message rules and the resync stay the same everywhere.</p>
+ */
+public final class Refusals {
+
+    private Refusals() {
+    }
+
+    /**
+     * @param player  the refused player, on the logical server
+     * @param rule    the rule that refused
+     * @param resync  what the client may have predicted
+     * @param item    the item the refused action used; empty when none
+     * @param target  the block the action aimed at, or null
+     */
+    public static void refuse(EntityPlayerMP player, Rule rule, Resync resync, ItemStack item, @Nullable BlockPos target) {
+        Settings settings = Settings.get();
+        if (settings.messagesEnabled()
+                && ServerState.get().messageThrottle().tryAcquire(player.getUniqueID(), System.currentTimeMillis(),
+                        settings.messageIntervalMillis())) {
+            player.sendStatusMessage(new TextComponentString(settings.message(rule.message())), true);
+        }
+        resend(player, resync);
+        if (DiagnosticLog.enabled()) {
+            FluidStack fluid = item.isEmpty() ? null : FluidUtil.getFluidContained(item);
+            DiagnosticLog.decision("refuse",
+                    "rule", rule.key(),
+                    "player", player.getName(),
+                    "dim", player.dimension,
+                    "item", item.isEmpty() ? "none" : item.getItem().getRegistryName(),
+                    "fluid", fluid != null ? fluid.getFluid().getName() : "none",
+                    "target", target != null ? target : "none");
+        }
+    }
+
+    private static void resend(EntityPlayerMP player, Resync resync) {
+        if (resync.inventoryNeeded()) {
+            player.sendContainerToPlayer(player.inventoryContainer);
+        }
+        for (BlockPos pos : resync.blocks()) {
+            player.connection.sendPacket(new SPacketBlockChange(player.world, pos));
+        }
+    }
+}

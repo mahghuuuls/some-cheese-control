@@ -1,0 +1,180 @@
+package com.mahghuuuls.somecheesecontrol;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * Enforces the package dependency rules of the architecture by scanning the imports of
+ * {@code src/main/java}. Fully qualified names written in code, without an import, are not seen.
+ */
+class DependencyRulesTest {
+
+    private static final String ROOT = "com.mahghuuuls.somecheesecontrol";
+    private static final String CLIMBING_TRACKER = ROOT + ".feature.climbing.ClimbingTracker";
+    private static final Pattern IMPORT = Pattern.compile("^import\\s+(?:static\\s+)?([\\w.]+)", Pattern.MULTILINE);
+    /** Packages every part of the mod may use; anything else belongs to another mod. */
+    private static final List<String> PLATFORM_PACKAGES = Arrays.asList(
+            "java.", "javax.", "net.minecraft.", "net.minecraftforge.", "org.apache.logging.log4j.",
+            "com.google.", "io.netty.", ROOT + ".");
+
+    @Test
+    void sourcesFollowTheDependencyRules() throws IOException {
+        Map<String, List<String>> imports = readImports(Paths.get("src", "main", "java"));
+        assertTrue(imports.containsKey(ROOT + ".SomeCheeseControlMod"), "the scan read the mod's sources");
+        assertEquals(Collections.emptyList(), violations(imports));
+    }
+
+    @Test
+    void scanFindsAForbiddenImportInASourceFile(@TempDir Path root) throws IOException {
+        Path dir = Files.createDirectories(root.resolve("com/mahghuuuls/somecheesecontrol/feature/liquid"));
+        Files.write(dir.resolve("Bad.java"), Arrays.asList(
+                "package com.mahghuuuls.somecheesecontrol.feature.liquid;",
+                "",
+                "import com.mahghuuuls.somecheesecontrol.feature.carry.CarryFeature;",
+                "import net.minecraft.client.Minecraft;",
+                "",
+                "class Bad {}"), StandardCharsets.UTF_8);
+        List<String> found = violations(readImports(root));
+        assertEquals(2, found.size(), found.toString());
+    }
+
+    @Test
+    void rulesDetectForbiddenImports() {
+        Map<String, List<String>> imports = new HashMap<>();
+        imports.put(ROOT + ".feature.liquid.A", Arrays.asList(ROOT + ".feature.carry.B"));
+        imports.put(ROOT + ".core.C", Arrays.asList(ROOT + ".feature.liquid.A"));
+        imports.put(ROOT + ".config.D", Arrays.asList(ROOT + ".core.Rule"));
+        imports.put(ROOT + ".feature.bed.E", Arrays.asList("c4.comforts.common.blocks.BlockBase"));
+        imports.put(ROOT + ".feature.climbing.F", Arrays.asList("bettercombat.mod.util.Helpers"));
+        imports.put(ROOT + ".integration.wizardry.G", Arrays.asList("net.minecraft.client.Minecraft"));
+        imports.put(ROOT + ".feature.cobweb.H", Arrays.asList(ROOT + ".diagnostic.StatusCommand"));
+        imports.put(ROOT + ".mixin.spartanshields.I", Arrays.asList(ROOT + ".feature.bed.E"));
+        List<String> found = violations(imports);
+        assertEquals(8, found.size(), found.toString());
+    }
+
+    @Test
+    void allowedImportsPass() {
+        Map<String, List<String>> imports = new HashMap<>();
+        imports.put(ROOT + ".feature.liquid.A", Arrays.asList(CLIMBING_TRACKER, CLIMBING_TRACKER + ".State", ROOT + ".core.Refusals"));
+        imports.put(ROOT + ".integration.wizardry.F", Arrays.asList("electroblob.wizardry.event.SpellCastEvent", CLIMBING_TRACKER));
+        imports.put(ROOT + ".mixin.spartanshields.M", Arrays.asList("org.spongepowered.asm.mixin.Mixin", ROOT + ".integration.spartanshields.Bridge"));
+        imports.put(ROOT + ".mixin.SccLateMixins", Arrays.asList("zone.rong.mixinbooter.ILateMixinLoader", "net.minecraftforge.fml.common.Loader"));
+        imports.put(ROOT + ".SomeCheeseControlMod", Arrays.asList(ROOT + ".diagnostic.SccCommand", ROOT + ".feature.liquid.A"));
+        assertEquals(Collections.emptyList(), violations(imports));
+    }
+
+    static List<String> violations(Map<String, List<String>> importsByClass) {
+        List<String> found = new ArrayList<>();
+        for (Map.Entry<String, List<String>> entry : importsByClass.entrySet()) {
+            String from = entry.getKey();
+            for (String target : entry.getValue()) {
+                String problem = check(from, target);
+                if (problem != null) {
+                    found.add(from + " -> " + target + ": " + problem);
+                }
+            }
+        }
+        Collections.sort(found);
+        return found;
+    }
+
+    private static String check(String from, String target) {
+        if (target.startsWith("net.minecraft.client.")) {
+            return "client class";
+        }
+        String fromPkg = relativePackage(from);
+        if (!isPlatform(target)) {
+            return mayImportOtherMods(fromPkg) ? null : "another mod's class outside integration or mixin";
+        }
+        if (!target.startsWith(ROOT + ".")) {
+            return null;
+        }
+        String targetPkg = relativePackage(target);
+        if (targetPkg.startsWith("diagnostic") && !fromPkg.isEmpty() && !fromPkg.startsWith("diagnostic")) {
+            return "only the main class may import diagnostic";
+        }
+        if (fromPkg.startsWith("config") && !targetPkg.startsWith("config")) {
+            return "config depends on nothing else";
+        }
+        if (fromPkg.startsWith("core") && !(targetPkg.startsWith("core") || targetPkg.startsWith("config"))) {
+            return "core depends only on config";
+        }
+        if (fromPkg.startsWith("feature.")) {
+            if (targetPkg.startsWith("integration") || targetPkg.startsWith("mixin")) {
+                return "features do not import integrations";
+            }
+            boolean otherFeature = targetPkg.startsWith("feature.") && !segment(targetPkg, 1).equals(segment(fromPkg, 1));
+            if (otherFeature && !(target.equals(CLIMBING_TRACKER) || target.startsWith(CLIMBING_TRACKER + "."))) {
+                return "features do not import other features";
+            }
+        }
+        if (fromPkg.startsWith("mixin.spartanshields")
+                && !(targetPkg.startsWith("mixin") || targetPkg.startsWith("integration.spartanshields"))) {
+            return "the Mixin calls only integration.spartanshields";
+        }
+        return null;
+    }
+
+    private static boolean isPlatform(String target) {
+        for (String prefix : PLATFORM_PACKAGES) {
+            if (target.startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean mayImportOtherMods(String pkg) {
+        return pkg.startsWith("integration.") || pkg.startsWith("mixin");
+    }
+
+    /** Package of {@code className} relative to the root, without the class name; "" for the root. */
+    private static String relativePackage(String className) {
+        String rel = className.startsWith(ROOT + ".") ? className.substring(ROOT.length() + 1) : className;
+        int dot = rel.lastIndexOf('.');
+        return dot < 0 ? "" : rel.substring(0, dot);
+    }
+
+    private static String segment(String pkg, int index) {
+        String[] parts = pkg.split("\\.");
+        return parts.length > index ? parts[index] : "";
+    }
+
+    private static Map<String, List<String>> readImports(Path sourceRoot) throws IOException {
+        Map<String, List<String>> result = new HashMap<>();
+        try (Stream<Path> files = Files.walk(sourceRoot)) {
+            for (Path file : files.filter(p -> p.toString().endsWith(".java")).collect(Collectors.toList())) {
+                String relative = sourceRoot.relativize(file).toString().replace('\\', '/');
+                String className = relative.substring(0, relative.length() - ".java".length()).replace('/', '.');
+                String text = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
+                List<String> imports = new ArrayList<>();
+                Matcher m = IMPORT.matcher(text);
+                while (m.find()) {
+                    imports.add(m.group(1));
+                }
+                result.put(className, imports);
+            }
+        }
+        return result;
+    }
+}
