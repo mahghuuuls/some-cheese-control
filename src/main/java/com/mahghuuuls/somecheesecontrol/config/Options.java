@@ -22,6 +22,7 @@ final class Options {
     static final String CARRYING_CATEGORY = "handOnlyCarrying";
     static final String CLIMBING_STATE_CATEGORY = "climbing";
     static final String CLIMBING_MELEE_CATEGORY = "climbingMelee";
+    static final String CLIMBING_RANGED_CATEGORY = "climbingRanged";
 
     static final BooleanOption RESTRICTIONS_IN_CREATIVE = new BooleanOption(GENERAL, "restrictionsApplyInCreative", false,
             "Apply the player restrictions to players in Creative mode too. Bed-explosion prevention always applies. Restart required.");
@@ -51,6 +52,8 @@ final class Options {
             "Blocks that also count as climbable, one modid:name per line. Ladders, vines and modded blocks that declare themselves climbable count already. Example: minecraft:iron_bars. Restart required.");
     static final BooleanOption CLIMBING_MELEE = new BooleanOption(CLIMBING_MELEE_CATEGORY, "enabled", true,
             "Refuse melee attacks, with either hand, while on a ladder or vine above the ground and for the release delay after letting go. Restart required.");
+    static final BooleanOption CLIMBING_RANGED = new BooleanOption(CLIMBING_RANGED_CATEGORY, "enabled", true,
+            "Refuse bows, crossbows, throwing weapons, thrown items (snowballs, eggs, ender pearls, splash and lingering potions, experience bottles, dynamite) and fishing rods while on a ladder or vine above the ground and for the release delay after letting go. A draw, load or charge in progress stops without firing and without cost. Restart required.");
 
     private Options() {
     }

@@ -22,6 +22,7 @@ class SettingsTest {
                 "water and lava buckets are carried in a hand by default");
         assertEquals(AllowedHand.EITHER, Options.ALLOWED_HAND.defaultValue, "either hand by default");
         assertTrue(Options.CLIMBING_MELEE.defaultValue, "every feature is on after installation");
+        assertTrue(Options.CLIMBING_RANGED.defaultValue, "every feature is on after installation");
         assertEquals(0.5, Options.CLIMBING_RELEASE_DELAY.defaultValue, "half a second after letting go");
         assertEquals(0.0, Options.CLIMBING_RELEASE_DELAY.min);
         assertEquals(5.0, Options.CLIMBING_RELEASE_DELAY.max);
@@ -43,6 +44,7 @@ class SettingsTest {
         assertEquals(Options.CARRIED_ITEMS.defaults(), defaults.carriedItemIds());
         assertEquals(Options.ALLOWED_HAND.defaultValue, defaults.allowedHand());
         assertEquals(Options.CLIMBING_MELEE.defaultValue, defaults.climbingMelee());
+        assertEquals(Options.CLIMBING_RANGED.defaultValue, defaults.climbingRanged());
         assertEquals(10, defaults.climbingReleaseDelayTicks(), "0.5 seconds is 10 ticks");
         assertEquals(Options.MESSAGES_ENABLED.defaultValue, defaults.messagesEnabled());
         assertEquals(Settings.toMillis(Options.MESSAGE_INTERVAL.defaultValue), defaults.messageIntervalMillis());
@@ -74,6 +76,7 @@ class SettingsTest {
         assertEquals("handOnlyCarrying.items", Options.CARRIED_ITEMS.path());
         assertEquals("handOnlyCarrying.allowedHand", Options.ALLOWED_HAND.path());
         assertEquals("climbingMelee.enabled", Options.CLIMBING_MELEE.path());
+        assertEquals("climbingRanged.enabled", Options.CLIMBING_RANGED.path());
         assertEquals("climbing.releaseDelaySeconds", Options.CLIMBING_RELEASE_DELAY.path());
         assertEquals("climbing.extraClimbableBlocks", Options.EXTRA_CLIMBABLE_BLOCKS.path());
     }

@@ -13,7 +13,8 @@ public enum Rule {
     UNSUPPORTED_LIQUID(MessageText.UNSUPPORTED_LIQUID, false),
     AIRBORNE_EMPTYING(MessageText.AIRBORNE_EMPTYING, false),
     FORCED_DROP(MessageText.FORCED_DROP, false),
-    CLIMBING_MELEE(MessageText.CLIMBING_MELEE, false);
+    CLIMBING_MELEE(MessageText.CLIMBING_MELEE, false),
+    CLIMBING_RANGED(MessageText.CLIMBING_RANGED, false);
 
     private final MessageText message;
     private final boolean appliesInCreative;

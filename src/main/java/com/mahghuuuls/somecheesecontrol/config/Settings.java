@@ -38,6 +38,7 @@ public final class Settings {
     private final int climbingReleaseDelayTicks;
     private final List<String> extraClimbableBlockIds;
     private final boolean climbingMelee;
+    private final boolean climbingRanged;
     private Set<Item> carriedItems = Collections.emptySet();
     private Set<Block> extraClimbableBlocks = Collections.emptySet();
     private boolean resolved;
@@ -57,6 +58,7 @@ public final class Settings {
         this.climbingReleaseDelayTicks = b.climbingReleaseDelayTicks;
         this.extraClimbableBlockIds = b.extraClimbableBlockIds;
         this.climbingMelee = b.climbingMelee;
+        this.climbingRanged = b.climbingRanged;
         this.messages = Collections.unmodifiableMap(new EnumMap<>(b.messages));
         this.problems = b.problems;
     }
@@ -104,6 +106,7 @@ public final class Settings {
         b.climbingReleaseDelayTicks = toTicks(Options.CLIMBING_RELEASE_DELAY.read(config, problems));
         b.extraClimbableBlockIds = Options.EXTRA_CLIMBABLE_BLOCKS.read(config);
         b.climbingMelee = Options.CLIMBING_MELEE.read(config, problems);
+        b.climbingRanged = Options.CLIMBING_RANGED.read(config, problems);
         return b.build();
     }
 
@@ -186,6 +189,10 @@ public final class Settings {
         return climbingMelee;
     }
 
+    public boolean climbingRanged() {
+        return climbingRanged;
+    }
+
     public String message(MessageText message) {
         String text = messages.get(message);
         return text != null ? text : message.defaultText();
@@ -209,6 +216,7 @@ public final class Settings {
         int climbingReleaseDelayTicks = toTicks(Options.CLIMBING_RELEASE_DELAY.defaultValue);
         List<String> extraClimbableBlockIds = Options.EXTRA_CLIMBABLE_BLOCKS.defaults();
         boolean climbingMelee = Options.CLIMBING_MELEE.defaultValue;
+        boolean climbingRanged = Options.CLIMBING_RANGED.defaultValue;
         final Map<MessageText, String> messages = new EnumMap<>(MessageText.class);
         final ConfigProblems problems = new ConfigProblems();
 

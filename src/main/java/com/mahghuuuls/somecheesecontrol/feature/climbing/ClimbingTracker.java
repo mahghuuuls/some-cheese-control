@@ -63,7 +63,8 @@ public final class ClimbingTracker {
         return value != null ? value : ClimbingRules.NEVER;
     }
 
-    private static long now() {
+    /** The server tick counter, the clock of every climbing timer. */
+    static long now() {
         MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
         return server != null ? server.getTickCounter() : 0L;
     }
