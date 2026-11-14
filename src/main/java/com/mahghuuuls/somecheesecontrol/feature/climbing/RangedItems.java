@@ -49,12 +49,18 @@ final class RangedItems {
     }
 
     /**
-     * True for any item without a use duration: it acts at the right click itself, with nothing to draw
-     * or charge first. A ranged item for which this is true is refused at the click; callers also ask
-     * {@link #isRanged}.
+     * True for an item that acts at the right click itself, with nothing to draw or charge first: any
+     * item without a use duration, and splash and lingering potions, which inherit the drinking duration
+     * of potions but are thrown at the click. A ranged item for which this is true is refused at the
+     * click; callers also ask {@link #isRanged}.
      */
     static boolean actsAtOnce(ItemStack stack) {
-        return stack.getMaxItemUseDuration() <= 0;
+        return throwsAtClick(stack.getItem().getClass()) || stack.getMaxItemUseDuration() <= 0;
+    }
+
+    /** True for the potion types thrown at the click although they keep the drinking duration. */
+    static boolean throwsAtClick(Class<?> itemType) {
+        return ItemSplashPotion.class.isAssignableFrom(itemType) || ItemLingeringPotion.class.isAssignableFrom(itemType);
     }
 
     /** The decision on plain facts about an item. */

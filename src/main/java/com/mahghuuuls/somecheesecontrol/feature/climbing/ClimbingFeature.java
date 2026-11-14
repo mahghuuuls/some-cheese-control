@@ -34,9 +34,9 @@ import javax.annotation.Nullable;
  * before any damage, durability or cooldown work; Spartan Weaponry's melee runs only after an
  * attack event that nobody cancelled.</p>
  *
- * <p>Ranged refusal has two paths. An item that acts at once (a snowball, a pearl, dynamite, a
- * fishing rod) is refused at the right click. An item with a use duration (a bow, a crossbow, a
- * throwing weapon) is let start and is stopped at the start of the player's next tick, before any
+ * <p>Ranged refusal has two paths. An item that acts at once (a snowball, a pearl, a splash potion,
+ * dynamite, a fishing rod) is refused at the right click. An item that is drawn or charged first (a
+ * bow, a crossbow, a throwing weapon) is let start and is stopped at the start of the player's next tick, before any
  * use tick runs. The same stop ends a draw that began before the climbing state, so one path covers
  * both. The client runs its own draw; the stop changes the server's hand state and resends the
  * inventory, either of which ends the client's draw, and a late resend corrects an arrow the client
@@ -254,7 +254,7 @@ public final class ClimbingFeature {
     /**
      * Which rule using this item breaks at this moment, or null for none. At a click in the air or a
      * use start, a ranged item that acts at once breaks the ranged rule and a blocklisted item the
-     * blocklist rule; a ranged item with a use duration is let start. At a click on a block or an
+     * blocklist rule; a ranged item that is drawn or charged first is let start. At a click on a block or an
      * entity, only a blocklisted item breaks a rule. During a use, a ranged item breaks the ranged
      * rule and a blocklisted item the blocklist rule.
      */

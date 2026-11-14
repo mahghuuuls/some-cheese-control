@@ -2,8 +2,10 @@ package com.mahghuuuls.somecheesecontrol.core;
 
 import com.mahghuuuls.somecheesecontrol.config.Settings;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockRailBase;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityMinecart;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -21,7 +23,8 @@ import java.util.Set;
  * <p>The player's own ground state is the one the server keeps from the client's movement packets,
  * which can lag one tick. A vehicle's ground state is read from the blocks under it instead: a
  * minecart running on rails never sets its own ground flag, and a floating boat sits above the
- * water it floats on.</p>
+ * water it floats on. A minecart also stands on the ground while it rides a rail, which has no
+ * collision box of its own.</p>
  */
 public final class PlayerSituation {
 
@@ -38,7 +41,7 @@ public final class PlayerSituation {
         Entity vehicle = player.getRidingEntity();
         if (vehicle != null) {
             AxisAlignedBB under = underneath(vehicle.getEntityBoundingBox());
-            boolean onGround = vehicle.world.collidesWithAnyBlock(under);
+            boolean onGround = vehicle.world.collidesWithAnyBlock(under) || isOnRail(vehicle);
             boolean inWater = vehicle.isInWater() || vehicle.world.isMaterialInBB(under, Material.WATER);
             return isAirborne(onGround, inWater);
         }
@@ -61,6 +64,20 @@ public final class PlayerSituation {
         BlockPos feet = new BlockPos(MathHelper.floor(player.posX), MathHelper.floor(player.getEntityBoundingBox().minY),
                 MathHelper.floor(player.posZ));
         return extraClimbable.contains(player.world.getBlockState(feet).getBlock());
+    }
+
+    /**
+     * A minecart on a rail stands on the rail's block. On a sloped rail the cart is raised half a block,
+     * and the rail itself has no collision box, so the probe under the cart finds nothing. The rail is
+     * looked for where the game's own minecart update looks for it, in the cart's block or the block
+     * below, and only for a cart that can use rails.
+     */
+    private static boolean isOnRail(Entity vehicle) {
+        if (!(vehicle instanceof EntityMinecart) || !((EntityMinecart) vehicle).canUseRail()) {
+            return false;
+        }
+        BlockPos pos = new BlockPos(MathHelper.floor(vehicle.posX), MathHelper.floor(vehicle.posY), MathHelper.floor(vehicle.posZ));
+        return BlockRailBase.isRailBlock(vehicle.world, pos) || BlockRailBase.isRailBlock(vehicle.world, pos.down());
     }
 
     /** Airborne means neither standing on something nor held up by a liquid. */

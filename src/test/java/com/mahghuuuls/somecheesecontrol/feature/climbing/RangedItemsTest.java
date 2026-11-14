@@ -1,6 +1,10 @@
 package com.mahghuuuls.somecheesecontrol.feature.climbing;
 
 import com.mahghuuuls.somecheesecontrol.feature.climbing.RangedItems.SpartanKind;
+import net.minecraft.item.ItemBow;
+import net.minecraft.item.ItemLingeringPotion;
+import net.minecraft.item.ItemPotion;
+import net.minecraft.item.ItemSplashPotion;
 import org.junit.jupiter.api.Test;
 
 import java.util.AbstractList;
@@ -41,6 +45,14 @@ class RangedItemsTest {
     @Test
     void otherModsItemsWithAUseDurationAreNotRanged() {
         assertFalse(RangedItems.decide(false, SpartanKind.NOT_SPARTAN, LONG, false), "a modded food or shield");
+    }
+
+    @Test
+    void splashAndLingeringPotionsAreThrownAtTheClick() {
+        assertTrue(RangedItems.throwsAtClick(ItemSplashPotion.class));
+        assertTrue(RangedItems.throwsAtClick(ItemLingeringPotion.class));
+        assertFalse(RangedItems.throwsAtClick(ItemPotion.class), "a drinkable potion is used over time");
+        assertFalse(RangedItems.throwsAtClick(ItemBow.class));
     }
 
     @Test
