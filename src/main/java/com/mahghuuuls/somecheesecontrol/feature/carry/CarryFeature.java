@@ -2,6 +2,7 @@ package com.mahghuuuls.somecheesecontrol.feature.carry;
 
 import com.mahghuuuls.somecheesecontrol.config.AllowedHand;
 import com.mahghuuuls.somecheesecontrol.config.Settings;
+import com.mahghuuuls.somecheesecontrol.core.DiagnosticLog;
 import com.mahghuuuls.somecheesecontrol.core.PlayerExemptions;
 import com.mahghuuuls.somecheesecontrol.core.Refusals;
 import com.mahghuuuls.somecheesecontrol.core.Resync;
@@ -20,11 +21,14 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
+import java.util.Locale;
 import java.util.Set;
 
 /**
  * Hand-only carrying: a restricted carried item anywhere in the player's own inventory except an
- * allowed hand is dropped, and picking one up puts it straight into an empty allowed hand.
+ * allowed hand moves into the offhand when the offhand is an allowed hand and empty, and is dropped
+ * otherwise; picking one up puts it straight into an empty allowed hand. In a screen, a client with
+ * this mod does not let the player put one outside an allowed hand in the first place.
  *
  * <p>Only the player's own inventory is checked: the item held on the cursor in an open screen,
  * chests and items inside other items (backpacks) are not. Dead players are skipped, so death drops
@@ -57,31 +61,45 @@ public final class CarryFeature {
             return;
         }
         InventoryPlayer inventory = player.inventory;
-        boolean dropped = dropOutsideHands(player, inventory.mainInventory, CarryRules.Section.MAIN, inventory.currentItem);
-        dropped |= dropOutsideHands(player, inventory.offHandInventory, CarryRules.Section.OFFHAND, inventory.currentItem);
-        dropped |= dropOutsideHands(player, inventory.armorInventory, CarryRules.Section.ARMOR, inventory.currentItem);
-        if (dropped) {
+        boolean changed = moveOrDrop(player, inventory.mainInventory, CarryRules.Section.MAIN);
+        changed |= moveOrDrop(player, inventory.offHandInventory, CarryRules.Section.OFFHAND);
+        changed |= moveOrDrop(player, inventory.armorInventory, CarryRules.Section.ARMOR);
+        if (changed) {
             Refusals.correctClient(player, Resync.inventory());
         }
     }
 
-    /** Drops every restricted item of {@code slots} outside an allowed hand; true when one was dropped. */
-    private boolean dropOutsideHands(EntityPlayerMP player, NonNullList<ItemStack> slots, CarryRules.Section section,
-                                     int selected) {
-        boolean dropped = false;
+    /**
+     * Moves or drops every restricted item of {@code slots} outside an allowed hand; true when one
+     * was moved or dropped. A move keeps the same stack, so nothing is copied or lost, and shows no
+     * message; a drop is refused like any rule.
+     */
+    private boolean moveOrDrop(EntityPlayerMP player, NonNullList<ItemStack> slots, CarryRules.Section section) {
+        InventoryPlayer inventory = player.inventory;
+        boolean changed = false;
         for (int i = 0; i < slots.size(); i++) {
             ItemStack stack = slots.get(i);
-            if (stack.isEmpty() || !restricted.contains(stack.getItem())
-                    || CarryRules.isAllowedSlot(section, i, selected, allowedHand)) {
+            if (stack.isEmpty() || !restricted.contains(stack.getItem())) {
                 continue;
             }
-            ItemStack forLog = stack.copy();
+            CarryRules.Outcome outcome = CarryRules.outcome(section, i, inventory.currentItem, allowedHand,
+                    inventory.offHandInventory.get(0).isEmpty());
+            if (outcome == CarryRules.Outcome.STAY) {
+                continue;
+            }
             slots.set(i, ItemStack.EMPTY);
-            player.dropItem(stack, false, false);
-            Refusals.refuse(player, Rule.FORCED_DROP, Resync.none(), forLog, null);
-            dropped = true;
+            if (outcome == CarryRules.Outcome.MOVE_TO_OFFHAND) {
+                inventory.offHandInventory.set(0, stack);
+                DiagnosticLog.decision("move", "player", player.getName(), "item", stack.getItem().getRegistryName(),
+                        "from", section.name().toLowerCase(Locale.ROOT) + ":" + i, "to", "offhand");
+            } else {
+                ItemStack forLog = stack.copy();
+                player.dropItem(stack, false, false);
+                Refusals.refuse(player, Rule.FORCED_DROP, Resync.none(), forLog, null);
+            }
+            changed = true;
         }
-        return dropped;
+        return changed;
     }
 
     /**

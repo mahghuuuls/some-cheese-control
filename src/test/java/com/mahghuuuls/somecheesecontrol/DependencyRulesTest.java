@@ -73,10 +73,11 @@ class DependencyRulesTest {
         imports.put(ROOT + ".feature.liquid.L", Arrays.asList(ROOT + ".network.Network"));
         imports.put(ROOT + ".client.M", Arrays.asList(ROOT + ".diagnostic.SccCommand"));
         imports.put(ROOT + ".network.N", Arrays.asList("net.minecraft.client.Minecraft"));
+        imports.put(ROOT + ".feature.carry.Q", Arrays.asList("org.lwjgl.input.Mouse"));
         imports.put(ROOT + ".client.O", Arrays.asList(ROOT + ".integration.wizardry.WizardryBridge"));
         imports.put(ROOT + ".client.P", Arrays.asList(ROOT + ".feature.liquid.LiquidPlacementFeature"));
         List<String> found = violations(imports);
-        assertEquals(15, found.size(), found.toString());
+        assertEquals(16, found.size(), found.toString());
     }
 
     @Test
@@ -88,11 +89,17 @@ class DependencyRulesTest {
         imports.put(ROOT + ".mixin.SccLateMixins", Arrays.asList("zone.rong.mixinbooter.ILateMixinLoader", "net.minecraftforge.fml.common.Loader"));
         imports.put(ROOT + ".SomeCheeseControlMod", Arrays.asList(ROOT + ".diagnostic.SccCommand", ROOT + ".feature.liquid.A",
                 ROOT + ".client.EarlyClientRefusal", ROOT + ".network.Network"));
-        imports.put(ROOT + ".client.C", Arrays.asList("net.minecraft.client.Minecraft", ROOT + ".feature.climbing.ClimbingRules",
-                ROOT + ".feature.liquid.LiquidPlacement", ROOT + ".core.Rule", ROOT + ".config.Settings", ROOT + ".network.N"));
+        imports.put(ROOT + ".client.C", Arrays.asList("net.minecraft.client.Minecraft", "org.lwjgl.input.Mouse", ROOT + ".feature.climbing.ClimbingRules",
+                ROOT + ".feature.liquid.LiquidPlacement", ROOT + ".feature.carry.CarryRules", ROOT + ".core.Rule", ROOT + ".config.Settings", ROOT + ".network.N"));
         imports.put(ROOT + ".network.N", Arrays.asList(ROOT + ".config.Settings", "io.netty.buffer.ByteBuf"));
         imports.put(ROOT + ".mixin.client.S", Arrays.asList("net.minecraft.client.Minecraft", ROOT + ".client.C"));
         assertEquals(Collections.emptyList(), violations(imports));
+    }
+
+    @Test
+    void theGamesInputLibraryIsClientOnly() {
+        assertEquals("client class outside client and mixin.client", check(ROOT + ".feature.carry.Q", "org.lwjgl.input.Mouse"));
+        assertEquals(null, check(ROOT + ".client.Q", "org.lwjgl.input.Mouse"));
     }
 
     static List<String> violations(Map<String, List<String>> importsByClass) {
@@ -110,9 +117,9 @@ class DependencyRulesTest {
         return found;
     }
 
-    private static String check(String from, String target) {
+    static String check(String from, String target) {
         String fromPkg = relativePackage(from);
-        if (target.startsWith("net.minecraft.client.")) {
+        if (target.startsWith("net.minecraft.client.") || target.startsWith("org.lwjgl.")) {
             return isClientCode(fromPkg) ? null : "client class outside client and mixin.client";
         }
         if (!isPlatform(target)) {

@@ -1,6 +1,7 @@
 package com.mahghuuuls.somecheesecontrol;
 
 import com.mahghuuuls.somecheesecontrol.client.EarlyClientRefusal;
+import com.mahghuuuls.somecheesecontrol.client.ScreenPlacementCheck;
 import com.mahghuuuls.somecheesecontrol.config.Settings;
 import com.mahghuuuls.somecheesecontrol.core.ClickGuard;
 import com.mahghuuuls.somecheesecontrol.core.ServerState;
@@ -60,6 +61,7 @@ public class SomeCheeseControlMod {
         }
         if (event.getSide().isClient()) {
             EarlyClientRefusal.register();
+            ScreenPlacementCheck.register();
         }
     }
 
