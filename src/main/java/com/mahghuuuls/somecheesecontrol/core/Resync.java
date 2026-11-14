@@ -21,7 +21,8 @@ import javax.annotation.Nullable;
 /**
  * What the client may show wrongly after the server acted, and so must be sent again.
  *
- * <p>A client without this mod runs its own copy of an action first; after a refusal it can show an
+ * <p>A client runs its own copy of an action first unless it refused the action early; where the
+ * two sides judged differently (near an edge, or a rule the client does not check), it can show an
  * emptied bucket or a block that does not exist on the server. While a screen such as a chest is
  * open, the normal sync covers only that screen, so offhand and armor changes need a resend too. An
  * interaction with an entity also runs on the client first, so the client can show a lead, a name

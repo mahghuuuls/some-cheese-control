@@ -1,5 +1,6 @@
 package com.mahghuuuls.somecheesecontrol.core;
 
+import com.mahghuuuls.somecheesecontrol.config.Settings;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -81,6 +82,14 @@ class CoreRulesTest {
         for (Rule rule : Rule.values()) {
             assertFalse(rule.key().isEmpty());
             assertFalse(rule.message().defaultText().isEmpty());
+        }
+    }
+
+    @Test
+    void withoutTheServersRulesNoRestrictionApplies() {
+        for (Rule rule : Rule.values()) {
+            assertFalse(PlayerExemptions.appliesUnder(null, false, false, false, rule), rule.name());
+            assertTrue(PlayerExemptions.appliesUnder(Settings.defaults(), false, false, false, rule), rule.name());
         }
     }
 }

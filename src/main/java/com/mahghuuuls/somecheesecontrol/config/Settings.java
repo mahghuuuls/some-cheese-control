@@ -1,15 +1,20 @@
 package com.mahghuuuls.somecheesecontrol.config;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 /**
  * The validated configuration, read once at startup and never changed while the game runs.
@@ -21,10 +26,20 @@ import java.util.Set;
  * <p>The snapshot is completed in two steps: values are read at pre-initialization, and the item
  * ids are turned into items by {@link #resolveRegistryEntries()} at initialization, once every item
  * is registered. After that it never changes.</p>
+ *
+ * <p>There are two snapshots, one per logical side. The server's comes from the configuration file.
+ * A client holds a copy of the rules of the server it is connected to, received at login and
+ * dropped at logout; the client's own configuration file never decides a rule. Code that acts for a
+ * world reads the snapshot of that world's side ({@link #forSide}), because in single player both
+ * sides run in one game.</p>
  */
 public final class Settings {
 
     private static Settings current = defaults();
+
+    /** The connected server's rules on this client; null when not connected to a server with this mod. */
+    @Nullable
+    private static volatile Settings clientCopy;
 
     private final boolean restrictionsApplyInCreative;
     private final boolean messagesEnabled;
@@ -68,8 +83,89 @@ public final class Settings {
         this.problems = b.problems;
     }
 
+    /** The server's snapshot, read from this game's configuration file. */
     public static Settings get() {
         return current;
+    }
+
+    /**
+     * The snapshot of one logical side: the server's for the server side, and the connected server's
+     * copy for the client side, which is null before the server's rules arrive and on a server
+     * without this mod. Nothing is refused on the client while it is null.
+     */
+    @Nullable
+    public static Settings forSide(boolean logicalClient) {
+        return logicalClient ? clientCopy : current;
+    }
+
+    /** Installs the rules received from the server for the current connection. */
+    public static void installClientCopy(Settings settings) {
+        clientCopy = settings;
+    }
+
+    /** Drops the received rules when the client leaves the server. */
+    public static void clearClientCopy() {
+        clientCopy = null;
+    }
+
+    /**
+     * Writes the values a client needs to apply the rules as the server does: the switches, the
+     * item and block ids as configured, the allowed hand, the release delay and the Creative setting.
+     * Message texts, intervals and diagnostics stay on the server.
+     */
+    public void writeRules(ByteBuf buf) {
+        buf.writeBoolean(restrictionsApplyInCreative);
+        buf.writeBoolean(unsupportedLiquidPlacement);
+        buf.writeBoolean(airborneEmptying);
+        buf.writeBoolean(handOnlyCarrying);
+        writeIds(buf, carriedItemIds);
+        ByteBufUtils.writeUTF8String(buf, allowedHand.name());
+        ByteBufUtils.writeVarInt(buf, climbingReleaseDelayTicks, 5);
+        writeIds(buf, extraClimbableBlockIds);
+        buf.writeBoolean(climbingMelee);
+        buf.writeBoolean(climbingRanged);
+        buf.writeBoolean(climbingItemBlocklist);
+        writeIds(buf, blockedItemIds);
+    }
+
+    /**
+     * Reads what {@link #writeRules} wrote, as a client copy. Its registry entries are not resolved
+     * yet; the receiver calls {@link #resolveRegistryEntries()}. Unwritten values keep their defaults.
+     *
+     * @throws IllegalArgumentException when the allowed hand is not one this version knows
+     */
+    public static Settings readRules(ByteBuf buf) {
+        Builder b = new Builder();
+        b.restrictionsApplyInCreative = buf.readBoolean();
+        b.unsupportedLiquidPlacement = buf.readBoolean();
+        b.airborneEmptying = buf.readBoolean();
+        b.handOnlyCarrying = buf.readBoolean();
+        b.carriedItemIds = readIds(buf);
+        b.allowedHand = AllowedHand.valueOf(ByteBufUtils.readUTF8String(buf));
+        b.climbingReleaseDelayTicks = ByteBufUtils.readVarInt(buf, 5);
+        b.extraClimbableBlockIds = readIds(buf);
+        b.climbingMelee = buf.readBoolean();
+        b.climbingRanged = buf.readBoolean();
+        b.climbingItemBlocklist = buf.readBoolean();
+        b.blockedItemIds = readIds(buf);
+        b.diagnosticLogging = false;
+        return b.build();
+    }
+
+    private static void writeIds(ByteBuf buf, List<String> ids) {
+        ByteBufUtils.writeVarInt(buf, ids.size(), 5);
+        for (String id : ids) {
+            ByteBufUtils.writeUTF8String(buf, id);
+        }
+    }
+
+    private static List<String> readIds(ByteBuf buf) {
+        int count = ByteBufUtils.readVarInt(buf, 5);
+        List<String> ids = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            ids.add(ByteBufUtils.readUTF8String(buf));
+        }
+        return Collections.unmodifiableList(ids);
     }
 
     /** Reads, validates and installs the snapshot. Called once, at pre-initialization. */
@@ -187,6 +283,11 @@ public final class Settings {
     /** The climbing release delay in game ticks. */
     public int climbingReleaseDelayTicks() {
         return climbingReleaseDelayTicks;
+    }
+
+    /** The extra climbable block ids as written, before resolution. */
+    public List<String> extraClimbableBlockIds() {
+        return extraClimbableBlockIds;
     }
 
     /** Configured extra climbable blocks; empty until {@link #resolveRegistryEntries()} has run. */

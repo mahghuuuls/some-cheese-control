@@ -3,7 +3,8 @@ package com.mahghuuuls.somecheesecontrol.config;
 /**
  * Every player message: its key in the configuration file and its English default text.
  *
- * <p>The text is sent as plain text built on the server, so players without the mod read it too.</p>
+ * <p>The text is sent as plain text built on the server, so it reads the same whatever language or
+ * resource pack the client uses.</p>
  */
 public enum MessageText {
 

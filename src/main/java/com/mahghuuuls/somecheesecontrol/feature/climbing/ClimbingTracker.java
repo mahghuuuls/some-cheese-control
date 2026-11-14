@@ -4,8 +4,6 @@ import com.mahghuuuls.somecheesecontrol.config.Settings;
 import com.mahghuuuls.somecheesecontrol.core.PlayerSituation;
 import com.mahghuuuls.somecheesecontrol.core.ServerState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,14 +31,14 @@ public final class ClimbingTracker {
      * {@link ClimbingFeature#isNeeded} decides; without it this answers from the live situation only.</p>
      */
     public static boolean isRestricted(EntityPlayer player) {
-        return ClimbingRules.isRestricted(PlayerSituation.isOnClimbableBlock(player), isSupported(player), last(player), now(),
+        return ClimbingRules.isRestricted(PlayerSituation.isOnClimbableBlock(player), isSupported(player), last(player), ServerState.tick(),
                 Settings.get().climbingReleaseDelayTicks());
     }
 
     /** Records this tick's facts for the player; called once per player per server tick. */
     static void update(EntityPlayer player) {
         Map<UUID, Long> map = ServerState.get().get(SLOT).byPlayer;
-        long updated = ClimbingRules.update(last(player), PlayerSituation.isOnClimbableBlock(player), isSupported(player), now());
+        long updated = ClimbingRules.update(last(player), PlayerSituation.isOnClimbableBlock(player), isSupported(player), ServerState.tick());
         if (updated == ClimbingRules.NEVER) {
             map.remove(player.getUniqueID());
         } else {
@@ -54,19 +52,13 @@ public final class ClimbingTracker {
     }
 
     /** Standing on the ground, or riding: the server does not update the ground flag of a rider. */
-    private static boolean isSupported(EntityPlayer player) {
+    public static boolean isSupported(EntityPlayer player) {
         return player.onGround || player.isRiding();
     }
 
     private static long last(EntityPlayer player) {
         Long value = ServerState.get().get(SLOT).byPlayer.get(player.getUniqueID());
         return value != null ? value : ClimbingRules.NEVER;
-    }
-
-    /** The server tick counter, the clock of every climbing timer. */
-    static long now() {
-        MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-        return server != null ? server.getTickCounter() : 0L;
     }
 
     /** Per-server map from player to the last tick that player held on. */

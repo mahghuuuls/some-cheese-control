@@ -11,6 +11,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -51,13 +52,14 @@ public final class PlayerSituation {
     /**
      * True when the block at the player's feet is climbable: the game's own test (ladders, vines and
      * modded blocks that declare themselves climbable), or one of the configured extra blocks at the
-     * same position.
+     * same position. The extra blocks are those of the player's side.
      */
     public static boolean isOnClimbableBlock(EntityPlayer player) {
         if (player.isOnLadder()) {
             return true;
         }
-        Set<Block> extraClimbable = Settings.get().extraClimbableBlocks();
+        Settings settings = Settings.forSide(player.world.isRemote);
+        Set<Block> extraClimbable = settings != null ? settings.extraClimbableBlocks() : Collections.<Block>emptySet();
         if (extraClimbable.isEmpty() || player.isSpectator()) {
             return false;
         }

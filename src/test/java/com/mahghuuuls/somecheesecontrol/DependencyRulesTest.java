@@ -68,8 +68,15 @@ class DependencyRulesTest {
         imports.put(ROOT + ".integration.wizardry.G", Arrays.asList("net.minecraft.client.Minecraft"));
         imports.put(ROOT + ".feature.cobweb.H", Arrays.asList(ROOT + ".diagnostic.StatusCommand"));
         imports.put(ROOT + ".mixin.spartanshields.I", Arrays.asList(ROOT + ".feature.bed.E"));
+        imports.put(ROOT + ".network.J", Arrays.asList(ROOT + ".core.Refusals"));
+        imports.put(ROOT + ".core.K", Arrays.asList(ROOT + ".client.EarlyClientRefusal"));
+        imports.put(ROOT + ".feature.liquid.L", Arrays.asList(ROOT + ".network.Network"));
+        imports.put(ROOT + ".client.M", Arrays.asList(ROOT + ".diagnostic.SccCommand"));
+        imports.put(ROOT + ".network.N", Arrays.asList("net.minecraft.client.Minecraft"));
+        imports.put(ROOT + ".client.O", Arrays.asList(ROOT + ".integration.wizardry.WizardryBridge"));
+        imports.put(ROOT + ".client.P", Arrays.asList(ROOT + ".feature.liquid.LiquidPlacementFeature"));
         List<String> found = violations(imports);
-        assertEquals(8, found.size(), found.toString());
+        assertEquals(15, found.size(), found.toString());
     }
 
     @Test
@@ -79,7 +86,12 @@ class DependencyRulesTest {
         imports.put(ROOT + ".integration.wizardry.F", Arrays.asList("electroblob.wizardry.event.SpellCastEvent", CLIMBING_TRACKER));
         imports.put(ROOT + ".mixin.spartanshields.M", Arrays.asList("org.spongepowered.asm.mixin.Mixin", ROOT + ".integration.spartanshields.Bridge"));
         imports.put(ROOT + ".mixin.SccLateMixins", Arrays.asList("zone.rong.mixinbooter.ILateMixinLoader", "net.minecraftforge.fml.common.Loader"));
-        imports.put(ROOT + ".SomeCheeseControlMod", Arrays.asList(ROOT + ".diagnostic.SccCommand", ROOT + ".feature.liquid.A"));
+        imports.put(ROOT + ".SomeCheeseControlMod", Arrays.asList(ROOT + ".diagnostic.SccCommand", ROOT + ".feature.liquid.A",
+                ROOT + ".client.EarlyClientRefusal", ROOT + ".network.Network"));
+        imports.put(ROOT + ".client.C", Arrays.asList("net.minecraft.client.Minecraft", ROOT + ".feature.climbing.ClimbingRules",
+                ROOT + ".feature.liquid.LiquidPlacement", ROOT + ".core.Rule", ROOT + ".config.Settings", ROOT + ".network.N"));
+        imports.put(ROOT + ".network.N", Arrays.asList(ROOT + ".config.Settings", "io.netty.buffer.ByteBuf"));
+        imports.put(ROOT + ".mixin.client.S", Arrays.asList("net.minecraft.client.Minecraft", ROOT + ".client.C"));
         assertEquals(Collections.emptyList(), violations(imports));
     }
 
@@ -99,10 +111,10 @@ class DependencyRulesTest {
     }
 
     private static String check(String from, String target) {
-        if (target.startsWith("net.minecraft.client.")) {
-            return "client class";
-        }
         String fromPkg = relativePackage(from);
+        if (target.startsWith("net.minecraft.client.")) {
+            return isClientCode(fromPkg) ? null : "client class outside client and mixin.client";
+        }
         if (!isPlatform(target)) {
             return mayImportOtherMods(fromPkg) ? null : "another mod's class outside integration or mixin";
         }
@@ -113,6 +125,19 @@ class DependencyRulesTest {
         if (targetPkg.startsWith("diagnostic") && !fromPkg.isEmpty() && !fromPkg.startsWith("diagnostic")) {
             return "only the main class may import diagnostic";
         }
+        if (inPackage(targetPkg, "client") && !(fromPkg.isEmpty() || isClientCode(fromPkg))) {
+            return "only the main class and mixin.client import client";
+        }
+        if (inPackage(fromPkg, "network") && !(inPackage(targetPkg, "network") || inPackage(targetPkg, "config"))) {
+            return "network depends only on config";
+        }
+        if (inPackage(fromPkg, "client") && !(inPackage(targetPkg, "client") || targetPkg.startsWith("feature.")
+                || inPackage(targetPkg, "core") || inPackage(targetPkg, "config") || inPackage(targetPkg, "network"))) {
+            return "client depends only on features, core, config and network";
+        }
+        if (inPackage(fromPkg, "client") && targetPkg.startsWith("feature.") && target.endsWith("Feature")) {
+            return "client uses feature rule classes and queries, not their event handlers";
+        }
         if (fromPkg.startsWith("config") && !targetPkg.startsWith("config")) {
             return "config depends on nothing else";
         }
@@ -122,6 +147,9 @@ class DependencyRulesTest {
         if (fromPkg.startsWith("feature.")) {
             if (targetPkg.startsWith("integration") || targetPkg.startsWith("mixin")) {
                 return "features do not import integrations";
+            }
+            if (inPackage(targetPkg, "network") || inPackage(targetPkg, "client")) {
+                return "features do not import network or client";
             }
             boolean otherFeature = targetPkg.startsWith("feature.") && !segment(targetPkg, 1).equals(segment(fromPkg, 1));
             if (otherFeature && !(target.equals(CLIMBING_TRACKER) || target.startsWith(CLIMBING_TRACKER + "."))) {
@@ -142,6 +170,16 @@ class DependencyRulesTest {
             }
         }
         return false;
+    }
+
+    /** The packages that may reference client-only Minecraft classes. */
+    private static boolean isClientCode(String pkg) {
+        return inPackage(pkg, "client") || inPackage(pkg, "mixin.client");
+    }
+
+    /** True when {@code pkg} is {@code name} or a package under it. */
+    private static boolean inPackage(String pkg, String name) {
+        return pkg.equals(name) || pkg.startsWith(name + ".");
     }
 
     private static boolean mayImportOtherMods(String pkg) {

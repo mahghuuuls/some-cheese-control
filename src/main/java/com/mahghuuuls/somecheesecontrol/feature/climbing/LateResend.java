@@ -29,14 +29,14 @@ final class LateResend {
     }
 
     static void schedule(EntityPlayer player) {
-        ServerState.get().get(SLOT).byPlayer.put(player.getUniqueID(), ClimbingTracker.now() + DELAY_TICKS);
+        ServerState.get().get(SLOT).byPlayer.put(player.getUniqueID(), ServerState.tick() + DELAY_TICKS);
     }
 
     /** Sends the resend when it is due; called once per player per server tick. */
     static void runDue(EntityPlayer player) {
         Map<UUID, Long> map = ServerState.get().get(SLOT).byPlayer;
         Long due = map.get(player.getUniqueID());
-        if (due != null && ClimbingTracker.now() >= due && player instanceof EntityPlayerMP) {
+        if (due != null && ServerState.tick() >= due && player instanceof EntityPlayerMP) {
             map.remove(player.getUniqueID());
             Refusals.correctClient((EntityPlayerMP) player, Resync.inventory());
         }

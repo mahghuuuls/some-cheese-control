@@ -7,11 +7,14 @@ package com.mahghuuuls.somecheesecontrol.feature.climbing;
  * ground or riding: a rider is held up by the mount, not by the ladder. The state lasts while holding
  * on and for the release delay counted from the last tick the player held on. Being supported ends
  * it at once.</p>
+ *
+ * <p>The server applies it to every player with the server's tick clock; a client applies it to its
+ * own player with its own tick clock, so both sides decide the same state.</p>
  */
-final class ClimbingRules {
+public final class ClimbingRules {
 
     /** No holding tick recorded. */
-    static final long NEVER = Long.MIN_VALUE;
+    public static final long NEVER = Long.MIN_VALUE;
 
     private ClimbingRules() {
     }
@@ -20,7 +23,7 @@ final class ClimbingRules {
      * The last tick the player held on, after this tick's facts: cleared when supported (even on a
      * climbable block), this tick when holding on, otherwise unchanged.
      */
-    static long update(long lastHoldingTick, boolean onClimbable, boolean supported, long nowTick) {
+    public static long update(long lastHoldingTick, boolean onClimbable, boolean supported, long nowTick) {
         if (supported) {
             return NEVER;
         }
@@ -31,7 +34,7 @@ final class ClimbingRules {
      * True while holding on now, or within {@code delayTicks} of the last holding tick and not
      * supported. The live facts count even when no tick has been recorded yet.
      */
-    static boolean isRestricted(boolean onClimbable, boolean supported, long lastHoldingTick, long nowTick, int delayTicks) {
+    public static boolean isRestricted(boolean onClimbable, boolean supported, long lastHoldingTick, long nowTick, int delayTicks) {
         if (supported) {
             return false;
         }

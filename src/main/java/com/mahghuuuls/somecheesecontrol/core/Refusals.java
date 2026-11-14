@@ -32,6 +32,30 @@ public final class Refusals {
     }
 
     /**
+     * Refuses one step of a right click. The first refused step of a click is the decision: it sends
+     * the message and writes the line. A later refused step of the same click only corrects the
+     * client. Either way the click is recorded, so {@link ClickGuard} refuses its remaining steps.
+     */
+    public static void refuseClickStep(EntityPlayerMP player, Rule rule, Resync resync, ItemStack item, @Nullable BlockPos target) {
+        if (ClickRecord.get().mark(player.getUniqueID(), ServerState.tick())) {
+            correctClient(player, resync);
+        } else {
+            refuse(player, rule, resync, item, target);
+        }
+    }
+
+    /**
+     * Records the player's click as refused without refusing this step: for a drawn item that the
+     * server lets start and stops at the player's next tick, where the refusal itself comes later.
+     */
+    public static void markClickRefused(EntityPlayerMP player) {
+        ClickRecord.get().mark(player.getUniqueID(), ServerState.tick());
+    }
+
+    /**
+     * Refuses an action that is not a step of a right click (a melee attack, a forced drop, the stop
+     * of a use in progress).
+     *
      * @param player  the refused player, on the logical server
      * @param rule    the rule that refused
      * @param resync  what the client may have predicted

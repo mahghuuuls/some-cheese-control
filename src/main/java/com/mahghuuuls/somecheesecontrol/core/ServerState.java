@@ -1,5 +1,8 @@
 package com.mahghuuuls.somecheesecontrol.core;
 
+import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -23,6 +26,12 @@ public final class ServerState {
 
     public static ServerState get() {
         return current;
+    }
+
+    /** The server tick counter, the clock of every per-server timer; 0 when no server runs. */
+    public static long tick() {
+        MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+        return server != null ? server.getTickCounter() : 0L;
     }
 
     /** Replaces the holder; called at server start and server stop. */

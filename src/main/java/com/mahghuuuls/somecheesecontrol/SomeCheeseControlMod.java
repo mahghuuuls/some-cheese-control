@@ -1,10 +1,13 @@
 package com.mahghuuuls.somecheesecontrol;
 
+import com.mahghuuuls.somecheesecontrol.client.EarlyClientRefusal;
 import com.mahghuuuls.somecheesecontrol.config.Settings;
+import com.mahghuuuls.somecheesecontrol.core.ClickGuard;
 import com.mahghuuuls.somecheesecontrol.core.ServerState;
 import com.mahghuuuls.somecheesecontrol.feature.carry.CarryFeature;
 import com.mahghuuuls.somecheesecontrol.feature.climbing.ClimbingFeature;
 import com.mahghuuuls.somecheesecontrol.feature.liquid.LiquidPlacementFeature;
+import com.mahghuuuls.somecheesecontrol.network.Network;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
@@ -18,10 +21,12 @@ import org.apache.logging.log4j.Logger;
 /**
  * Entry point of Some Cheese Control. Wires configuration and the enabled features; owns no rule.
  *
- * <p>{@code acceptableRemoteVersions = "*"} lets clients without the mod join a server that has it:
- * every rule is decided on the server.</p>
+ * <p>The mod is required on both sides, in the same version: the server decides every rule, and
+ * the client refuses its own player's actions early with the server's rules, so a refused action
+ * shows only the message. Without {@code acceptableRemoteVersions}, Forge refuses a client without
+ * the mod at join.</p>
  */
-@Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION, acceptableRemoteVersions = "*")
+@Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION)
 public class SomeCheeseControlMod {
 
     public static final Logger LOGGER = LogManager.getLogger(Tags.MOD_NAME);
@@ -29,6 +34,7 @@ public class SomeCheeseControlMod {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         Settings.load(new Configuration(event.getSuggestedConfigurationFile()));
+        Network.register(Tags.MOD_ID);
     }
 
     @Mod.EventHandler
@@ -41,6 +47,8 @@ public class SomeCheeseControlMod {
         for (String warning : settings.problems().warnings()) {
             LOGGER.warn("Configuration: {}", warning);
         }
+        // Registered first and always: any feature's refused click step makes the rest of the click refused.
+        MinecraftForge.EVENT_BUS.register(new ClickGuard());
         if (LiquidPlacementFeature.isNeeded(settings)) {
             MinecraftForge.EVENT_BUS.register(new LiquidPlacementFeature());
         }
@@ -49,6 +57,9 @@ public class SomeCheeseControlMod {
         }
         if (ClimbingFeature.isNeeded(settings)) {
             MinecraftForge.EVENT_BUS.register(new ClimbingFeature(settings));
+        }
+        if (event.getSide().isClient()) {
+            EarlyClientRefusal.register();
         }
     }
 
