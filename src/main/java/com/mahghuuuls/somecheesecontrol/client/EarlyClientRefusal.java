@@ -45,7 +45,8 @@ import javax.annotation.Nullable;
  * refused something, a held item that came back unchanged is kept as the same copy, so the hand does
  * not move; a changed item still shows the correction.</p>
  *
- * <p>A melee attack is refused too, but its arm swing comes from code no event reaches. Items the
+ * <p>A melee attack is refused too; its arm swing and attack bar reset come from code no event
+ * reaches, which the swing Mixins hide where MixinBooter is present ({@link SwingHiding}). Items the
  * server lets start and stops at once (bows, crossbows, throwing weapons) are refused here at the
  * click, so no draw shows; a use begun before the climbing state is ended with
  * {@code resetActiveHand}, which, unlike a stop, releases nothing.</p>
@@ -77,7 +78,9 @@ public final class EarlyClientRefusal {
 
     /** Registers the handlers. Call once, at initialization, on the physical client only. */
     public static void register() {
-        MinecraftForge.EVENT_BUS.register(new EarlyClientRefusal());
+        EarlyClientRefusal refusal = new EarlyClientRefusal();
+        SwingHiding.attach(refusal);
+        MinecraftForge.EVENT_BUS.register(refusal);
     }
 
     @SubscribeEvent
@@ -106,6 +109,7 @@ public final class EarlyClientRefusal {
         lastMainHand = player.getHeldItemMainhand();
         lastSelectedSlot = player.inventory.currentItem;
         lastOffHand = player.getHeldItemOffhand();
+        SwingHiding.clearAttack();
     }
 
     /** For the client's own player: a refused use in progress ends before its use tick; the climbing state is updated after the move. */
@@ -182,7 +186,14 @@ public final class EarlyClientRefusal {
                 && isClimbingRefused(player, Rule.CLIMBING_MELEE, clickTick(player))) {
             event.setCanceled(true);
             keepHeldItems(player);
+            SwingHiding.markRefusedAttack();
         }
+    }
+
+    /** True when the climbing rule refuses a melee attack by the client's own player in this click. */
+    boolean refusesMeleeNow(EntityPlayer player) {
+        return ownPlayerRules(player) != null && climbingRules.melee()
+                && isClimbingRefused(player, Rule.CLIMBING_MELEE, clickTick(player));
     }
 
     /**

@@ -1,0 +1,9 @@
+{
+  "package": "com.mahghuuuls.somecheesecontrol.mixin.client.vanilla",
+  "required": false,
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.somecheesecontrol.refmap.json",
+  "plugin": "com.mahghuuuls.somecheesecontrol.mixin.client.SwingMixinPlugin",
+  "client": ["MinecraftMixin", "PlayerControllerMPMixin"]
+}

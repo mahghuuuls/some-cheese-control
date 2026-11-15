@@ -1,0 +1,8 @@
+{
+  "package": "com.mahghuuuls.somecheesecontrol.mixin.client.rlcombat",
+  "required": false,
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_8",
+  "plugin": "com.mahghuuuls.somecheesecontrol.mixin.client.SwingMixinPlugin",
+  "client": ["EventHandlersClientMixin", "BetterCombatHandMixin"]
+}

@@ -76,8 +76,9 @@ class DependencyRulesTest {
         imports.put(ROOT + ".feature.carry.Q", Arrays.asList("org.lwjgl.input.Mouse"));
         imports.put(ROOT + ".client.O", Arrays.asList(ROOT + ".integration.wizardry.WizardryBridge"));
         imports.put(ROOT + ".client.P", Arrays.asList(ROOT + ".feature.liquid.LiquidPlacementFeature"));
+        imports.put(ROOT + ".mixin.client.vanilla.R", Arrays.asList(ROOT + ".core.Refusals"));
         List<String> found = violations(imports);
-        assertEquals(16, found.size(), found.toString());
+        assertEquals(17, found.size(), found.toString());
     }
 
     @Test
@@ -92,7 +93,8 @@ class DependencyRulesTest {
         imports.put(ROOT + ".client.C", Arrays.asList("net.minecraft.client.Minecraft", "org.lwjgl.input.Mouse", ROOT + ".feature.climbing.ClimbingRules",
                 ROOT + ".feature.liquid.LiquidPlacement", ROOT + ".feature.carry.CarryRules", ROOT + ".core.Rule", ROOT + ".config.Settings", ROOT + ".network.N"));
         imports.put(ROOT + ".network.N", Arrays.asList(ROOT + ".config.Settings", "io.netty.buffer.ByteBuf"));
-        imports.put(ROOT + ".mixin.client.S", Arrays.asList("net.minecraft.client.Minecraft", ROOT + ".client.C"));
+        imports.put(ROOT + ".mixin.client.S", Arrays.asList("net.minecraft.client.Minecraft", ROOT + ".client.C",
+                "com.llamalad7.mixinextras.injector.v2.WrapWithCondition", "org.objectweb.asm.tree.ClassNode"));
         assertEquals(Collections.emptyList(), violations(imports));
     }
 
@@ -162,6 +164,10 @@ class DependencyRulesTest {
             if (otherFeature && !(target.equals(CLIMBING_TRACKER) || target.startsWith(CLIMBING_TRACKER + "."))) {
                 return "features do not import other features";
             }
+        }
+        if (inPackage(fromPkg, "mixin.client") && target.startsWith(ROOT + ".")
+                && !(inPackage(targetPkg, "client") || inPackage(targetPkg, "mixin.client"))) {
+            return "mixin.client calls only client";
         }
         if (fromPkg.startsWith("mixin.spartanshields")
                 && !(targetPkg.startsWith("mixin") || targetPkg.startsWith("integration.spartanshields"))) {

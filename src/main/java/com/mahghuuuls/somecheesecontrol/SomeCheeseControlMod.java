@@ -2,6 +2,7 @@ package com.mahghuuuls.somecheesecontrol;
 
 import com.mahghuuuls.somecheesecontrol.client.EarlyClientRefusal;
 import com.mahghuuuls.somecheesecontrol.client.ScreenPlacementCheck;
+import com.mahghuuuls.somecheesecontrol.client.SwingHiding;
 import com.mahghuuuls.somecheesecontrol.config.Settings;
 import com.mahghuuuls.somecheesecontrol.core.ClickGuard;
 import com.mahghuuuls.somecheesecontrol.core.ServerState;
@@ -13,6 +14,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
@@ -62,6 +64,13 @@ public class SomeCheeseControlMod {
         if (event.getSide().isClient()) {
             EarlyClientRefusal.register();
             ScreenPlacementCheck.register();
+        }
+    }
+
+    @Mod.EventHandler
+    public void loadComplete(FMLLoadCompleteEvent event) {
+        if (event.getSide().isClient()) {
+            SwingHiding.reportInactivePaths();
         }
     }
 
