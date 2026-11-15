@@ -15,7 +15,9 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * The only owner of what "airborne" and "on a climbable block" mean for a player.
+ * The only owner of what "airborne" and "on a climbable block" mean for a player, and of what
+ * holds a vehicle up (ground, water, or nothing), which the airborne rule and the vehicle fall rules
+ * share so both judge a vehicle the same way.
  *
  * <p>A player is airborne when not standing on the ground and not in water or lava; holding on to a
  * ladder above air counts as airborne. A riding player is airborne when the vehicle is neither on
@@ -38,15 +40,35 @@ public final class PlayerSituation {
     private PlayerSituation() {
     }
 
+    /** What holds a vehicle up, read from the blocks under it. Water wins over ground: a landing in water is safe. */
+    public enum Support {
+        WATER, GROUND, NONE
+    }
+
     public static boolean isAirborne(EntityPlayer player) {
         Entity vehicle = player.getRidingEntity();
         if (vehicle != null) {
-            AxisAlignedBB under = underneath(vehicle.getEntityBoundingBox());
-            boolean onGround = vehicle.world.collidesWithAnyBlock(under) || isOnRail(vehicle);
-            boolean inWater = vehicle.isInWater() || vehicle.world.isMaterialInBB(under, Material.WATER);
-            return isAirborne(onGround, inWater);
+            return vehicleSupport(vehicle) == Support.NONE;
         }
         return isAirborne(player.onGround, player.isInWater() || player.isInLava());
+    }
+
+    /**
+     * What holds {@code vehicle} up now: water when it is in water or water is just under it, ground
+     * when a block is just under it or a minecart rides a rail, otherwise nothing.
+     */
+    public static Support vehicleSupport(Entity vehicle) {
+        AxisAlignedBB under = underneath(vehicle.getEntityBoundingBox());
+        boolean inWater = vehicle.isInWater() || vehicle.world.isMaterialInBB(under, Material.WATER);
+        boolean onGround = vehicle.world.collidesWithAnyBlock(under) || isOnRail(vehicle);
+        return support(onGround, inWater);
+    }
+
+    static Support support(boolean onGround, boolean inWater) {
+        if (inWater) {
+            return Support.WATER;
+        }
+        return onGround ? Support.GROUND : Support.NONE;
     }
 
     /**
@@ -74,7 +96,7 @@ public final class PlayerSituation {
      * looked for where the game's own minecart update looks for it, in the cart's block or the block
      * below, and only for a cart that can use rails.
      */
-    private static boolean isOnRail(Entity vehicle) {
+    public static boolean isOnRail(Entity vehicle) {
         if (!(vehicle instanceof EntityMinecart) || !((EntityMinecart) vehicle).canUseRail()) {
             return false;
         }

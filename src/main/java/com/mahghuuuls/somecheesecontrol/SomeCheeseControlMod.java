@@ -9,6 +9,7 @@ import com.mahghuuuls.somecheesecontrol.core.ServerState;
 import com.mahghuuuls.somecheesecontrol.feature.carry.CarryFeature;
 import com.mahghuuuls.somecheesecontrol.feature.climbing.ClimbingFeature;
 import com.mahghuuuls.somecheesecontrol.feature.liquid.LiquidPlacementFeature;
+import com.mahghuuuls.somecheesecontrol.feature.vehiclefall.VehicleFallTracker;
 import com.mahghuuuls.somecheesecontrol.network.Network;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -60,6 +61,9 @@ public class SomeCheeseControlMod {
         }
         if (ClimbingFeature.isNeeded(settings)) {
             MinecraftForge.EVENT_BUS.register(new ClimbingFeature(settings));
+        }
+        if (VehicleFallTracker.isNeeded(settings)) {
+            MinecraftForge.EVENT_BUS.register(new VehicleFallTracker());
         }
         if (event.getSide().isClient()) {
             EarlyClientRefusal.register();

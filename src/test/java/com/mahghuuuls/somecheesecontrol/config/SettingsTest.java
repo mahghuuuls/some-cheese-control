@@ -27,6 +27,7 @@ class SettingsTest {
         assertTrue(Options.CLIMBING_MELEE.defaultValue, "every feature is on after installation");
         assertTrue(Options.CLIMBING_RANGED.defaultValue, "every feature is on after installation");
         assertTrue(Options.CLIMBING_ITEM_BLOCKLIST.defaultValue, "every feature is on after installation");
+        assertTrue(Options.VEHICLE_FALL.defaultValue, "every feature is on after installation");
         assertTrue(Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.defaults().isEmpty(), "the climbing item blocklist is empty by default");
         assertEquals(0.5, Options.CLIMBING_RELEASE_DELAY.defaultValue, "half a second after letting go");
         assertEquals(0.0, Options.CLIMBING_RELEASE_DELAY.min);
@@ -98,6 +99,15 @@ class SettingsTest {
         assertFalse(settings.climbingItemBlocklist());
         assertTrue(settings.climbingRanged(), "the ranged switch is a separate key");
         assertEquals(Arrays.asList("minecraft:lead", "nosuchmod:thing"), settings.blockedItemIds());
+    }
+
+    @Test
+    void vehicleFallDamageCanBeSwitchedOff() {
+        Configuration config = new Configuration();
+        config.get("vehicleFall", "enabled", true).set(false);
+        assertFalse(Settings.read(config).vehicleFall(), "the switch is read from vehicleFall.enabled");
+        assertTrue(Settings.read(new Configuration()).vehicleFall(), "on when the file does not have it yet");
+        assertEquals("vehicleFall.enabled", Options.VEHICLE_FALL.path());
     }
 
     @Test

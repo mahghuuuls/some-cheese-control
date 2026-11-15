@@ -24,6 +24,7 @@ final class Options {
     static final String CLIMBING_MELEE_CATEGORY = "climbingMelee";
     static final String CLIMBING_RANGED_CATEGORY = "climbingRanged";
     static final String CLIMBING_ITEM_BLOCKLIST_CATEGORY = "climbingItemBlocklist";
+    static final String VEHICLE_FALL_CATEGORY = "vehicleFall";
 
     static final BooleanOption RESTRICTIONS_IN_CREATIVE = new BooleanOption(GENERAL, "restrictionsApplyInCreative", false,
             "Apply the player restrictions to players in Creative mode too. Bed-explosion prevention always applies. Restart required.");
@@ -58,6 +59,8 @@ final class Options {
             "Refuse melee attacks, with either hand, while on a ladder or vine above the ground and for the release delay after letting go. Restart required.");
     static final BooleanOption CLIMBING_ITEM_BLOCKLIST = new BooleanOption(CLIMBING_ITEM_BLOCKLIST_CATEGORY, "enabled", true,
             "Refuse every use of the items in the list below while climbing. With an empty list this adds nothing. Restart required.");
+    static final BooleanOption VEHICLE_FALL = new BooleanOption(VEHICLE_FALL_CATEGORY, "enabled", true,
+            "Fall damage for boats and minecarts: a player who boards one while falling keeps the fall, and a player in a boat that falls takes the fall damage when it lands on a block. Water and rails stay safe; Feather Falling applies. Restart required.");
     static final BooleanOption CLIMBING_RANGED = new BooleanOption(CLIMBING_RANGED_CATEGORY, "enabled", true,
             "Refuse bows, crossbows, throwing weapons, thrown items (snowballs, eggs, ender pearls, splash and lingering potions, experience bottles, dynamite) and fishing rods while on a ladder or vine above the ground and for the release delay after letting go. A draw, load or charge in progress stops without firing and without cost. Restart required.");
 

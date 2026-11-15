@@ -41,4 +41,12 @@ class PlayerSituationTest {
         assertEquals(20.001, under.minZ, 1.0e-9);
         assertEquals(20.999, under.maxZ, 1.0e-9);
     }
+
+    @Test
+    void waterHoldsAVehicleBeforeGround() {
+        assertEquals(PlayerSituation.Support.WATER, PlayerSituation.support(true, true), "a boat landing in shallow water is safe");
+        assertEquals(PlayerSituation.Support.WATER, PlayerSituation.support(false, true));
+        assertEquals(PlayerSituation.Support.GROUND, PlayerSituation.support(true, false));
+        assertEquals(PlayerSituation.Support.NONE, PlayerSituation.support(false, false));
+    }
 }

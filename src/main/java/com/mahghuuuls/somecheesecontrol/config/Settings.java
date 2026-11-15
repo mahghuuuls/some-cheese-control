@@ -56,6 +56,7 @@ public final class Settings {
     private final boolean climbingRanged;
     private final boolean climbingItemBlocklist;
     private final List<String> blockedItemIds;
+    private final boolean vehicleFall;
     private Set<Item> carriedItems = Collections.emptySet();
     private Set<Block> extraClimbableBlocks = Collections.emptySet();
     private Set<Item> blockedItems = Collections.emptySet();
@@ -79,6 +80,7 @@ public final class Settings {
         this.climbingRanged = b.climbingRanged;
         this.climbingItemBlocklist = b.climbingItemBlocklist;
         this.blockedItemIds = b.blockedItemIds;
+        this.vehicleFall = b.vehicleFall;
         this.messages = Collections.unmodifiableMap(new EnumMap<>(b.messages));
         this.problems = b.problems;
     }
@@ -109,9 +111,11 @@ public final class Settings {
     }
 
     /**
-     * Writes the values a client needs to apply the rules as the server does: the switches, the
-     * item and block ids as configured, the allowed hand, the release delay and the Creative setting.
-     * Message texts, intervals and diagnostics stay on the server.
+     * Writes the values a client needs to apply the rules as the server does: the switches of the
+     * rules a client checks, the item and block ids as configured, the allowed hand, the release
+     * delay and the Creative setting. Message texts, intervals, diagnostics and the switches of
+     * server-only features (vehicle fall damage) stay on the server; a client copy reads them as
+     * their defaults.
      */
     public void writeRules(ByteBuf buf) {
         buf.writeBoolean(restrictionsApplyInCreative);
@@ -210,6 +214,7 @@ public final class Settings {
         b.climbingRanged = Options.CLIMBING_RANGED.read(config, problems);
         b.climbingItemBlocklist = Options.CLIMBING_ITEM_BLOCKLIST.read(config, problems);
         b.blockedItemIds = Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.read(config);
+        b.vehicleFall = Options.VEHICLE_FALL.read(config, problems);
         return b.build();
     }
 
@@ -317,6 +322,11 @@ public final class Settings {
         return blockedItems;
     }
 
+    /** Fall damage for boats and minecarts, and the pending fall of a player who boards one while falling. */
+    public boolean vehicleFall() {
+        return vehicleFall;
+    }
+
     public String message(MessageText message) {
         String text = messages.get(message);
         return text != null ? text : message.defaultText();
@@ -343,6 +353,7 @@ public final class Settings {
         boolean climbingRanged = Options.CLIMBING_RANGED.defaultValue;
         boolean climbingItemBlocklist = Options.CLIMBING_ITEM_BLOCKLIST.defaultValue;
         List<String> blockedItemIds = Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.defaults();
+        boolean vehicleFall = Options.VEHICLE_FALL.defaultValue;
         final Map<MessageText, String> messages = new EnumMap<>(MessageText.class);
         final ConfigProblems problems = new ConfigProblems();
 
