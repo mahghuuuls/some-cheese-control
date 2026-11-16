@@ -1,7 +1,7 @@
 package com.mahghuuuls.somecheesecontrol.feature.cobweb;
 
 /**
- * The cobweb release rules as plain decisions over amounts, flags and box edges. The feature
+ * The cobweb release rules as plain decisions over flags and box edges. The feature
  * gathers the facts and removes the webs.
  */
 final class CobwebRules {
@@ -14,33 +14,6 @@ final class CobwebRules {
     static final double INSET = 0.001;
 
     private CobwebRules() {
-    }
-
-    /**
-     * True when a hit is actual damage: health was lost, or only absorption hearts were. A canceled
-     * hit, a hit blocked by a shield and a hit fully absorbed by the invulnerability time do not get
-     * this far, so the caller never asks for them; a stronger hit during the invulnerability time
-     * does, and {@link #isInvulnerabilityHit} tells it apart.
-     *
-     * @param amount the damage left after armor, potions and absorption
-     * @param absorptionBefore the absorption when the hit started
-     * @param absorptionAfter the absorption after the hit's absorption part was taken
-     */
-    static boolean isActualDamage(float amount, float absorptionBefore, float absorptionAfter) {
-        return amount > 0F || absorptionAfter < absorptionBefore;
-    }
-
-    /**
-     * True when a hit arrives during the mob's invulnerability time. A new hit sets the time to its
-     * maximum just before the damage is applied, so the time is exactly at its maximum for a new hit.
-     * While the time is above half its maximum (an earlier hit, or a time the game set higher, as for
-     * the riders of a skeleton trap), the game lets a hit through only when it is stronger than the
-     * last one, and then only the difference is applied: that is such a hit. In the game, damage
-     * reaches a mob only through its hit logic; damage another mod applied directly to a mob hit in
-     * the last half second would also be taken for such a hit.
-     */
-    static boolean isInvulnerabilityHit(int hurtResistantTime, int maxHurtResistantTime) {
-        return hurtResistantTime > maxHurtResistantTime / 2.0F && hurtResistantTime != maxHurtResistantTime;
     }
 
     /** True when the webs may be removed: always, unless the setting follows a false {@code mobGriefing}. */

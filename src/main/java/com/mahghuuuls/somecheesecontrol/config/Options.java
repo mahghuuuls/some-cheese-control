@@ -26,6 +26,7 @@ final class Options {
     static final String CLIMBING_ITEM_BLOCKLIST_CATEGORY = "climbingItemBlocklist";
     static final String VEHICLE_FALL_CATEGORY = "vehicleFall";
     static final String COBWEB_CATEGORY = "cobwebRelease";
+    static final String BOAT_ESCAPE_CATEGORY = "boatEscape";
 
     static final BooleanOption RESTRICTIONS_IN_CREATIVE = new BooleanOption(GENERAL, "restrictionsApplyInCreative", false,
             "Apply the player restrictions to players in Creative mode too. Bed-explosion prevention always applies. Restart required.");
@@ -69,6 +70,10 @@ final class Options {
             "Blocks that also count as cobwebs, one modid:name per line. The vanilla cobweb and modded webs made from it count already. List web-like blocks only: a removed block drops no item, but a block that holds items still spills them. Example: somemod:thick_web. Restart required.");
     static final BooleanOption COBWEB_FOLLOWS_MOB_GRIEFING = new BooleanOption(COBWEB_CATEGORY, "followMobGriefing", false,
             "When true, cobwebs are not removed while the mobGriefing game rule is false. When false (the default), the game rule does not matter. Restart required.");
+    static final BooleanOption BOAT_ESCAPE = new BooleanOption(BOAT_ESCAPE_CATEGORY, "enabled", true,
+            "When a mob (any living entity except a player) riding a vanilla boat takes damage, it leaves the boat and is placed next to it where it cannot suffocate. Modded boats and ships are not covered; minecarts are not affected. Restart required.");
+    static final DoubleOption BOAT_REBOARD_DELAY = new DoubleOption(BOAT_ESCAPE_CATEGORY, "reboardSeconds", 5.0, 0.0, 60.0,
+            "How long a mob that left a boat this way cannot board any boat, in seconds. The game itself keeps any mob that leaves a vehicle from boarding again for 3 seconds, so a value under 3 acts as 3. Restart required.");
     static final BooleanOption CLIMBING_RANGED = new BooleanOption(CLIMBING_RANGED_CATEGORY, "enabled", true,
             "Refuse bows, crossbows, throwing weapons, thrown items (snowballs, eggs, ender pearls, splash and lingering potions, experience bottles, dynamite) and fishing rods while on a ladder or vine above the ground and for the release delay after letting go. A draw, load or charge in progress stops without firing and without cost. Restart required.");
 

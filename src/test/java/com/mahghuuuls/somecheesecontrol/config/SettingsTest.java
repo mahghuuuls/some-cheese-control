@@ -31,6 +31,10 @@ class SettingsTest {
         assertTrue(Options.COBWEB_RELEASE.defaultValue, "every feature is on after installation");
         assertTrue(Options.EXTRA_WEB_BLOCKS.defaults().isEmpty(), "no extra web blocks by default");
         assertFalse(Options.COBWEB_FOLLOWS_MOB_GRIEFING.defaultValue, "cobweb release ignores mobGriefing by default");
+        assertTrue(Options.BOAT_ESCAPE.defaultValue, "every feature is on after installation");
+        assertEquals(5.0, Options.BOAT_REBOARD_DELAY.defaultValue, "5 seconds before boarding again");
+        assertEquals(0.0, Options.BOAT_REBOARD_DELAY.min);
+        assertEquals(60.0, Options.BOAT_REBOARD_DELAY.max);
         assertTrue(Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.defaults().isEmpty(), "the climbing item blocklist is empty by default");
         assertEquals(0.5, Options.CLIMBING_RELEASE_DELAY.defaultValue, "half a second after letting go");
         assertEquals(0.0, Options.CLIMBING_RELEASE_DELAY.min);
@@ -63,6 +67,8 @@ class SettingsTest {
         assertEquals(Options.COBWEB_RELEASE.defaultValue, defaults.cobwebRelease());
         assertEquals(Options.EXTRA_WEB_BLOCKS.defaults(), defaults.extraWebBlockIds());
         assertEquals(Options.COBWEB_FOLLOWS_MOB_GRIEFING.defaultValue, defaults.cobwebFollowsMobGriefing());
+        assertEquals(Options.BOAT_ESCAPE.defaultValue, defaults.boatEscape());
+        assertEquals(100, defaults.boatReboardTicks(), "5 seconds is 100 ticks");
         assertTrue(defaults.problems().isEmpty());
     }
 
@@ -97,6 +103,8 @@ class SettingsTest {
         assertEquals("cobwebRelease.enabled", Options.COBWEB_RELEASE.path());
         assertEquals("cobwebRelease.extraWebBlocks", Options.EXTRA_WEB_BLOCKS.path());
         assertEquals("cobwebRelease.followMobGriefing", Options.COBWEB_FOLLOWS_MOB_GRIEFING.path());
+        assertEquals("boatEscape.enabled", Options.BOAT_ESCAPE.path());
+        assertEquals("boatEscape.reboardSeconds", Options.BOAT_REBOARD_DELAY.path());
     }
 
     @Test
@@ -130,6 +138,17 @@ class SettingsTest {
         assertTrue(settings.cobwebFollowsMobGriefing());
         assertEquals(Arrays.asList("somemod:thick_web"), settings.extraWebBlockIds());
         assertTrue(settings.vehicleFall(), "another feature's switch is a separate key");
+    }
+
+    @Test
+    void boatEscapeOptionsAreReadFromTheirOwnKeys() {
+        Configuration config = new Configuration();
+        config.get("boatEscape", "enabled", true).set(false);
+        config.get("boatEscape", "reboardSeconds", 5.0).set(2.5);
+        Settings settings = Settings.read(config);
+        assertFalse(settings.boatEscape());
+        assertEquals(50, settings.boatReboardTicks());
+        assertTrue(settings.cobwebRelease(), "another feature's switch is a separate key");
     }
 
     @Test

@@ -60,6 +60,8 @@ public final class Settings {
     private final boolean cobwebRelease;
     private final List<String> extraWebBlockIds;
     private final boolean cobwebFollowsMobGriefing;
+    private final boolean boatEscape;
+    private final int boatReboardTicks;
     private Set<Item> carriedItems = Collections.emptySet();
     private Set<Block> extraClimbableBlocks = Collections.emptySet();
     private Set<Item> blockedItems = Collections.emptySet();
@@ -88,6 +90,8 @@ public final class Settings {
         this.cobwebRelease = b.cobwebRelease;
         this.extraWebBlockIds = b.extraWebBlockIds;
         this.cobwebFollowsMobGriefing = b.cobwebFollowsMobGriefing;
+        this.boatEscape = b.boatEscape;
+        this.boatReboardTicks = b.boatReboardTicks;
         this.messages = Collections.unmodifiableMap(new EnumMap<>(b.messages));
         this.problems = b.problems;
     }
@@ -121,7 +125,7 @@ public final class Settings {
      * Writes the values a client needs to apply the rules as the server does: the switches of the
      * rules a client checks, the item and block ids as configured, the allowed hand, the release
      * delay and the Creative setting. Message texts, intervals, diagnostics and the switches of
-     * server-only features (vehicle fall damage, cobweb release) stay on the server; a client copy reads them as
+     * server-only features (vehicle fall damage, cobweb release, boat escape) stay on the server; a client copy reads them as
      * their defaults.
      */
     public void writeRules(ByteBuf buf) {
@@ -225,6 +229,8 @@ public final class Settings {
         b.cobwebRelease = Options.COBWEB_RELEASE.read(config, problems);
         b.extraWebBlockIds = Options.EXTRA_WEB_BLOCKS.read(config);
         b.cobwebFollowsMobGriefing = Options.COBWEB_FOLLOWS_MOB_GRIEFING.read(config, problems);
+        b.boatEscape = Options.BOAT_ESCAPE.read(config, problems);
+        b.boatReboardTicks = toTicks(Options.BOAT_REBOARD_DELAY.read(config, problems));
         return b.build();
     }
 
@@ -358,6 +364,16 @@ public final class Settings {
         return cobwebFollowsMobGriefing;
     }
 
+    /** Boat escape: a damaged mob leaves its vanilla boat and cannot board a boat for a while. */
+    public boolean boatEscape() {
+        return boatEscape;
+    }
+
+    /** How long an ejected mob cannot board a boat, in game ticks. */
+    public int boatReboardTicks() {
+        return boatReboardTicks;
+    }
+
     public String message(MessageText message) {
         String text = messages.get(message);
         return text != null ? text : message.defaultText();
@@ -388,6 +404,8 @@ public final class Settings {
         boolean cobwebRelease = Options.COBWEB_RELEASE.defaultValue;
         List<String> extraWebBlockIds = Options.EXTRA_WEB_BLOCKS.defaults();
         boolean cobwebFollowsMobGriefing = Options.COBWEB_FOLLOWS_MOB_GRIEFING.defaultValue;
+        boolean boatEscape = Options.BOAT_ESCAPE.defaultValue;
+        int boatReboardTicks = toTicks(Options.BOAT_REBOARD_DELAY.defaultValue);
         final Map<MessageText, String> messages = new EnumMap<>(MessageText.class);
         final ConfigProblems problems = new ConfigProblems();
 

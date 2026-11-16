@@ -6,34 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Actual damage, the mobGriefing setting, and which block positions are inside a body box. */
+/** The mobGriefing setting, and which block positions are inside a body box. */
 class CobwebRulesTest {
-
-    @Test
-    void healthLostIsActualDamage() {
-        assertTrue(CobwebRules.isActualDamage(3F, 0F, 0F));
-    }
-
-    @Test
-    void aHitThatOnlyRemovesAbsorptionIsActualDamage() {
-        assertTrue(CobwebRules.isActualDamage(0F, 4F, 1F), "absorption went from 4 to 1, no health lost");
-    }
-
-    @Test
-    void aHitWithNothingLeftAndNoAbsorptionTakenIsNotActualDamage() {
-        assertFalse(CobwebRules.isActualDamage(0F, 4F, 4F), "armor or resistance took the whole hit");
-        assertFalse(CobwebRules.isActualDamage(0F, 0F, 0F));
-    }
-
-    @Test
-    void aStrongerHitDuringTheInvulnerabilityTimeIsTold() {
-        // A raised time counting down through exactly the maximum looks like a new hit here; no test can tell them apart.
-        assertFalse(CobwebRules.isInvulnerabilityHit(20, 20), "a new hit sets the time to its maximum first");
-        assertTrue(CobwebRules.isInvulnerabilityHit(19, 20));
-        assertTrue(CobwebRules.isInvulnerabilityHit(11, 20));
-        assertFalse(CobwebRules.isInvulnerabilityHit(10, 20), "in the second half a hit is a new hit");
-        assertTrue(CobwebRules.isInvulnerabilityHit(60, 20), "a time set above the maximum, as for skeleton trap riders");
-    }
 
     @Test
     void mobGriefingMattersOnlyWhenTheSettingFollowsIt() {

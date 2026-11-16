@@ -4,8 +4,10 @@ import com.mahghuuuls.somecheesecontrol.client.EarlyClientRefusal;
 import com.mahghuuuls.somecheesecontrol.client.ScreenPlacementCheck;
 import com.mahghuuuls.somecheesecontrol.client.SwingHiding;
 import com.mahghuuuls.somecheesecontrol.config.Settings;
+import com.mahghuuuls.somecheesecontrol.core.ActualDamage;
 import com.mahghuuuls.somecheesecontrol.core.ClickGuard;
 import com.mahghuuuls.somecheesecontrol.core.ServerState;
+import com.mahghuuuls.somecheesecontrol.feature.boatescape.BoatEscape;
 import com.mahghuuuls.somecheesecontrol.feature.carry.CarryFeature;
 import com.mahghuuuls.somecheesecontrol.feature.climbing.ClimbingFeature;
 import com.mahghuuuls.somecheesecontrol.feature.cobweb.CobwebRelease;
@@ -66,8 +68,16 @@ public class SomeCheeseControlMod {
         if (VehicleFallTracker.isNeeded(settings)) {
             MinecraftForge.EVENT_BUS.register(new VehicleFallTracker());
         }
+        if (ActualDamage.isNeeded(settings)) {
+            MinecraftForge.EVENT_BUS.register(new ActualDamage());
+        }
+        // Cobweb release and boat escape both listen last to the damage event, in this order: the webs
+        // around the mob are released before boat escape moves it away from them.
         if (CobwebRelease.isNeeded(settings)) {
             MinecraftForge.EVENT_BUS.register(new CobwebRelease(settings));
+        }
+        if (BoatEscape.isNeeded(settings)) {
+            MinecraftForge.EVENT_BUS.register(new BoatEscape(settings));
         }
         if (event.getSide().isClient()) {
             EarlyClientRefusal.register();

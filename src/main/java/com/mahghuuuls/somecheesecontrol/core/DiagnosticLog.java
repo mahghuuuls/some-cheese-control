@@ -1,6 +1,9 @@
 package com.mahghuuuls.somecheesecontrol.core;
 
 import com.mahghuuuls.somecheesecontrol.config.Settings;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
+import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,6 +34,12 @@ public final class DiagnosticLog {
             return;
         }
         LOGGER.info(format(event, keyValues));
+    }
+
+    /** The registry id of an entity's type, such as {@code minecraft:zombie}, for a diagnostic line. */
+    public static String entityName(Entity entity) {
+        ResourceLocation key = EntityList.getKey(entity);
+        return key != null ? key.toString() : entity.getClass().getSimpleName();
     }
 
     static String format(String event, Object... keyValues) {
