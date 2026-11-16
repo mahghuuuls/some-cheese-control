@@ -40,6 +40,7 @@ class SettingsMessageFormatTest {
         b.climbingRanged = !Options.CLIMBING_RANGED.defaultValue;
         b.climbingItemBlocklist = !Options.CLIMBING_ITEM_BLOCKLIST.defaultValue;
         b.blockedItemIds = Arrays.asList("minecraft:lead", "minecraft:name_tag", "minecraft:flint_and_steel");
+        b.bedExplosion = !Options.BED_EXPLOSION.defaultValue;
         b.diagnosticLogging = true;
         Settings sent = b.build();
 
@@ -57,6 +58,7 @@ class SettingsMessageFormatTest {
         assertEquals(sent.climbingRanged(), received.climbingRanged());
         assertEquals(sent.climbingItemBlocklist(), received.climbingItemBlocklist());
         assertEquals(sent.blockedItemIds(), received.blockedItemIds());
+        assertEquals(sent.bedExplosion(), received.bedExplosion());
         assertFalse(received.diagnosticLogging(), "a client writes no diagnostic lines of its own");
     }
 

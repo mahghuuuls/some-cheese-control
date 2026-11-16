@@ -7,12 +7,14 @@ import com.mahghuuuls.somecheesecontrol.config.Settings;
 import com.mahghuuuls.somecheesecontrol.core.ActualDamage;
 import com.mahghuuuls.somecheesecontrol.core.ClickGuard;
 import com.mahghuuuls.somecheesecontrol.core.ServerState;
+import com.mahghuuuls.somecheesecontrol.feature.bed.BedFeature;
 import com.mahghuuuls.somecheesecontrol.feature.boatescape.BoatEscape;
 import com.mahghuuuls.somecheesecontrol.feature.carry.CarryFeature;
 import com.mahghuuuls.somecheesecontrol.feature.climbing.ClimbingFeature;
 import com.mahghuuuls.somecheesecontrol.feature.cobweb.CobwebRelease;
 import com.mahghuuuls.somecheesecontrol.feature.liquid.LiquidPlacementFeature;
 import com.mahghuuuls.somecheesecontrol.feature.vehiclefall.VehicleFallTracker;
+import com.mahghuuuls.somecheesecontrol.integration.IntegrationGate;
 import com.mahghuuuls.somecheesecontrol.network.Network;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -79,6 +81,10 @@ public class SomeCheeseControlMod {
         if (BoatEscape.isNeeded(settings)) {
             MinecraftForge.EVENT_BUS.register(new BoatEscape(settings));
         }
+        if (BedFeature.isNeeded(settings)) {
+            MinecraftForge.EVENT_BUS.register(new BedFeature());
+        }
+        IntegrationGate.startAll();
         if (event.getSide().isClient()) {
             EarlyClientRefusal.register();
             ScreenPlacementCheck.register();

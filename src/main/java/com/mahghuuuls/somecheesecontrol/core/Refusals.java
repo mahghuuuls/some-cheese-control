@@ -36,11 +36,12 @@ public final class Refusals {
      * the message and writes the line. A later refused step of the same click only corrects the
      * client. Either way the click is recorded, so {@link ClickGuard} refuses its remaining steps.
      */
-    public static void refuseClickStep(EntityPlayerMP player, Rule rule, Resync resync, ItemStack item, @Nullable BlockPos target) {
+    public static void refuseClickStep(EntityPlayerMP player, Rule rule, Resync resync, ItemStack item, @Nullable BlockPos target,
+                                       Object... details) {
         if (ClickRecord.get().mark(player.getUniqueID(), ServerState.tick())) {
             correctClient(player, resync);
         } else {
-            refuse(player, rule, resync, item, target);
+            refuse(player, rule, resync, item, target, details);
         }
     }
 
@@ -61,8 +62,10 @@ public final class Refusals {
      * @param resync  what the client may have predicted
      * @param item    the item the refused action used; empty when none
      * @param target  the block the action aimed at, or null
+     * @param details more key and value pairs for the diagnostic line (the bed of a refused bed use)
      */
-    public static void refuse(EntityPlayerMP player, Rule rule, Resync resync, ItemStack item, @Nullable BlockPos target) {
+    public static void refuse(EntityPlayerMP player, Rule rule, Resync resync, ItemStack item, @Nullable BlockPos target,
+                              Object... details) {
         Settings settings = Settings.get();
         if (settings.messagesEnabled()
                 && ServerState.get().messageThrottle().tryAcquire(player.getUniqueID(), System.currentTimeMillis(),
@@ -72,13 +75,17 @@ public final class Refusals {
         resync.sendTo(player);
         if (DiagnosticLog.enabled()) {
             FluidStack fluid = item.isEmpty() ? null : FluidUtil.getFluidContained(item);
-            DiagnosticLog.decision("refuse",
+            Object[] line = {
                     "rule", rule.key(),
                     "player", player.getName(),
                     "dim", player.dimension,
                     "item", item.isEmpty() ? "none" : item.getItem().getRegistryName(),
                     "fluid", fluid != null ? fluid.getFluid().getName() : "none",
-                    "target", target != null ? target : "none");
+                    "target", target != null ? target : "none"};
+            Object[] all = new Object[line.length + details.length];
+            System.arraycopy(line, 0, all, 0, line.length);
+            System.arraycopy(details, 0, all, line.length, details.length);
+            DiagnosticLog.decision("refuse", all);
         }
     }
 }

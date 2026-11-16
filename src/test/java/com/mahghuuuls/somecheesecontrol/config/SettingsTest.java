@@ -32,6 +32,7 @@ class SettingsTest {
         assertTrue(Options.EXTRA_WEB_BLOCKS.defaults().isEmpty(), "no extra web blocks by default");
         assertFalse(Options.COBWEB_FOLLOWS_MOB_GRIEFING.defaultValue, "cobweb release ignores mobGriefing by default");
         assertTrue(Options.BOAT_ESCAPE.defaultValue, "every feature is on after installation");
+        assertTrue(Options.BED_EXPLOSION.defaultValue, "every feature is on after installation");
         assertEquals(5.0, Options.BOAT_REBOARD_DELAY.defaultValue, "5 seconds before boarding again");
         assertEquals(0.0, Options.BOAT_REBOARD_DELAY.min);
         assertEquals(60.0, Options.BOAT_REBOARD_DELAY.max);
@@ -68,6 +69,7 @@ class SettingsTest {
         assertEquals(Options.EXTRA_WEB_BLOCKS.defaults(), defaults.extraWebBlockIds());
         assertEquals(Options.COBWEB_FOLLOWS_MOB_GRIEFING.defaultValue, defaults.cobwebFollowsMobGriefing());
         assertEquals(Options.BOAT_ESCAPE.defaultValue, defaults.boatEscape());
+        assertEquals(Options.BED_EXPLOSION.defaultValue, defaults.bedExplosion());
         assertEquals(100, defaults.boatReboardTicks(), "5 seconds is 100 ticks");
         assertTrue(defaults.problems().isEmpty());
     }
@@ -105,6 +107,7 @@ class SettingsTest {
         assertEquals("cobwebRelease.followMobGriefing", Options.COBWEB_FOLLOWS_MOB_GRIEFING.path());
         assertEquals("boatEscape.enabled", Options.BOAT_ESCAPE.path());
         assertEquals("boatEscape.reboardSeconds", Options.BOAT_REBOARD_DELAY.path());
+        assertEquals("bedExplosion.enabled", Options.BED_EXPLOSION.path());
     }
 
     @Test

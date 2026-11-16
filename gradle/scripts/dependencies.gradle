@@ -36,6 +36,8 @@ configurations {
 dependencies {
     // Include StripLatestForgeRequirements by default for the dev env, saves everyone a hassle
     runtimeOnly 'com.cleanroommc:strip-latest-forge-requirements:1.0'
+    // Comforts 1.12.2-1.4.1.3 (CurseForge project 276951, file 2880613), compile only: integration.comforts
+    compileOnly rfg.deobf('curse.maven:comforts-276951:2880613')
     // Include OSXNarratorBlocker by default for the dev env, for M1+ Macs
     runtimeOnly 'com.cleanroommc:osxnarratorblocker:1.0'
 

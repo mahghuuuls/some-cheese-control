@@ -31,6 +31,15 @@ class DependencyRulesTest {
     private static final String ROOT = "com.mahghuuuls.somecheesecontrol";
     private static final String CLIMBING_TRACKER = ROOT + ".feature.climbing.ClimbingTracker";
     private static final Pattern IMPORT = Pattern.compile("^import\\s+(?:static\\s+)?([\\w.]+)", Pattern.MULTILINE);
+    /** The one other mod each integration package may import, besides MixinBooter; a new integration adds its own. */
+    private static final Map<String, String> INTEGRATION_MOD_PACKAGES = new HashMap<>();
+
+    static {
+        INTEGRATION_MOD_PACKAGES.put("comforts", "c4.comforts.");
+        INTEGRATION_MOD_PACKAGES.put("wizardry", "electroblob.wizardry.");
+        INTEGRATION_MOD_PACKAGES.put("spartanshields", "com.oblivioussp.");
+    }
+
     /** Packages every part of the mod may use; anything else belongs to another mod. */
     private static final List<String> PLATFORM_PACKAGES = Arrays.asList(
             "java.", "javax.", "net.minecraft.", "net.minecraftforge.", "org.apache.logging.log4j.",
@@ -99,6 +108,15 @@ class DependencyRulesTest {
     }
 
     @Test
+    void anIntegrationImportsOnlyItsOwnMod() {
+        assertEquals(null, check(ROOT + ".integration.comforts.G", "c4.comforts.common.capability.CapabilitySleeping"));
+        assertEquals("an integration imports only its own mod",
+                check(ROOT + ".integration.wizardry.W", "c4.comforts.common.capability.CapabilitySleeping"));
+        assertEquals(null, check(ROOT + ".integration.spartanshields.S", "zone.rong.mixinbooter.ILateMixinLoader"),
+                "an integration may use MixinBooter");
+    }
+
+    @Test
     void theGamesInputLibraryIsClientOnly() {
         assertEquals("client class outside client and mixin.client", check(ROOT + ".feature.carry.Q", "org.lwjgl.input.Mouse"));
         assertEquals(null, check(ROOT + ".client.Q", "org.lwjgl.input.Mouse"));
@@ -125,6 +143,11 @@ class DependencyRulesTest {
             return isClientCode(fromPkg) ? null : "client class outside client and mixin.client";
         }
         if (!isPlatform(target)) {
+            if (fromPkg.startsWith("integration.")) {
+                String own = INTEGRATION_MOD_PACKAGES.get(segment(fromPkg, 1));
+                boolean mixinBooter = target.startsWith("zone.rong.mixinbooter.") || target.startsWith("org.spongepowered.");
+                return mixinBooter || own != null && target.startsWith(own) ? null : "an integration imports only its own mod";
+            }
             return mayImportOtherMods(fromPkg) ? null : "another mod's class outside integration or mixin";
         }
         if (!target.startsWith(ROOT + ".")) {

@@ -15,7 +15,8 @@ public enum Rule {
     FORCED_DROP(MessageText.FORCED_DROP, false),
     CLIMBING_MELEE(MessageText.CLIMBING_MELEE, false),
     CLIMBING_RANGED(MessageText.CLIMBING_RANGED, false),
-    CLIMBING_ITEM(MessageText.CLIMBING_ITEM, false);
+    CLIMBING_ITEM(MessageText.CLIMBING_ITEM, false),
+    BED_EXPLOSION(MessageText.BED_EXPLOSION, true);
 
     private final MessageText message;
     private final boolean appliesInCreative;

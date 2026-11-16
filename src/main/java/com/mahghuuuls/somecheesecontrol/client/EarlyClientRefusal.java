@@ -4,6 +4,7 @@ import com.mahghuuuls.somecheesecontrol.config.Settings;
 import com.mahghuuuls.somecheesecontrol.core.PlayerExemptions;
 import com.mahghuuuls.somecheesecontrol.core.PlayerSituation;
 import com.mahghuuuls.somecheesecontrol.core.Rule;
+import com.mahghuuuls.somecheesecontrol.feature.bed.ExplosiveBedUse;
 import com.mahghuuuls.somecheesecontrol.feature.climbing.ClimbingItemRules;
 import com.mahghuuuls.somecheesecontrol.feature.climbing.ClimbingItemRules.Moment;
 import com.mahghuuuls.somecheesecontrol.feature.climbing.ClimbingRules;
@@ -23,6 +24,9 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 
@@ -57,6 +61,8 @@ import javax.annotation.Nullable;
  */
 public final class EarlyClientRefusal {
 
+    private static final Logger LOGGER = LogManager.getLogger("SomeCheeseControl/Client");
+
     /** How long after a refusal an unchanged held item keeps its copy: the server's immediate and late resends, with a margin. */
     private static final int KEEP_HELD_TICKS = 40;
 
@@ -72,6 +78,7 @@ public final class EarlyClientRefusal {
     private ItemStack lastMainHand = ItemStack.EMPTY;
     private int lastSelectedSlot = -1;
     private ItemStack lastOffHand = ItemStack.EMPTY;
+    private boolean bedCheckFailureLogged;
 
     private EarlyClientRefusal() {
     }
@@ -132,8 +139,7 @@ public final class EarlyClientRefusal {
         Settings rules = ownPlayerRules(player);
         if (rules != null && LiquidPlacement.check(rules, player, event.getWorld(), event.getEmptyBucket(), event.getTarget()) != null) {
             event.setCanceled(true);
-            refusedClickTick = clickTick(player);
-            keepHeldItems(player);
+            markRefusedClick(player);
         }
     }
 
@@ -147,6 +153,46 @@ public final class EarlyClientRefusal {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (refuseStep(event.getEntityPlayer(), event.getItemStack(), Moment.BLOCK_OR_ENTITY)) {
+            cancel(event);
+        }
+    }
+
+    /**
+     * A click that would use a bed that explodes here. The client's own bed use does nothing but
+     * answer {@code SUCCESS}, which swings the arm; refusing it hides the swing, and the click's other
+     * steps are refused with it. As on the server, the check runs first and again last, for a click
+     * whose block use another mod allowed in between. The game asks the dimension's sleep rule only on
+     * the server; when a modded dimension's rule fails on a client, the click is not refused early
+     * here (logged once), and the server still decides.
+     */
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onRightClickBed(PlayerInteractEvent.RightClickBlock event) {
+        refuseBedUse(event);
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onRightClickBedAllowedLater(PlayerInteractEvent.RightClickBlock event) {
+        refuseBedUse(event);
+    }
+
+    private void refuseBedUse(PlayerInteractEvent.RightClickBlock event) {
+        EntityPlayer player = event.getEntityPlayer();
+        Settings rules = ownPlayerRules(player);
+        if (rules == null || !rules.bedExplosion() || !PlayerExemptions.applies(player, Rule.BED_EXPLOSION)) {
+            return;
+        }
+        boolean refused;
+        try {
+            refused = ExplosiveBedUse.isRefusedClick(player, event.getWorld(), event.getPos(), event.getUseBlock());
+        } catch (RuntimeException e) {
+            refused = false;
+            if (!bedCheckFailureLogged) {
+                bedCheckFailureLogged = true;
+                LOGGER.warn("The bed check failed on this client in dimension {}; bed clicks there are left to the server", player.dimension, e);
+            }
+        }
+        if (refused) {
+            markRefusedClick(player);
             cancel(event);
         }
     }
@@ -211,9 +257,14 @@ public final class EarlyClientRefusal {
         if (rule == null || !isClimbingRefused(player, rule, clickTick(player))) {
             return false;
         }
+        markRefusedClick(player);
+        return true;
+    }
+
+    /** Records this click as refused, so its other steps are refused too, and keeps the held items' copies. */
+    private void markRefusedClick(EntityPlayer player) {
         refusedClickTick = clickTick(player);
         keepHeldItems(player);
-        return true;
     }
 
     /** Ends a refused use in progress without releasing it, before this tick's use tick runs. */

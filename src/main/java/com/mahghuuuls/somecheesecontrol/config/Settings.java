@@ -62,6 +62,7 @@ public final class Settings {
     private final boolean cobwebFollowsMobGriefing;
     private final boolean boatEscape;
     private final int boatReboardTicks;
+    private final boolean bedExplosion;
     private Set<Item> carriedItems = Collections.emptySet();
     private Set<Block> extraClimbableBlocks = Collections.emptySet();
     private Set<Item> blockedItems = Collections.emptySet();
@@ -92,6 +93,7 @@ public final class Settings {
         this.cobwebFollowsMobGriefing = b.cobwebFollowsMobGriefing;
         this.boatEscape = b.boatEscape;
         this.boatReboardTicks = b.boatReboardTicks;
+        this.bedExplosion = b.bedExplosion;
         this.messages = Collections.unmodifiableMap(new EnumMap<>(b.messages));
         this.problems = b.problems;
     }
@@ -125,8 +127,8 @@ public final class Settings {
      * Writes the values a client needs to apply the rules as the server does: the switches of the
      * rules a client checks, the item and block ids as configured, the allowed hand, the release
      * delay and the Creative setting. Message texts, intervals, diagnostics and the switches of
-     * server-only features (vehicle fall damage, cobweb release, boat escape) stay on the server; a client copy reads them as
-     * their defaults.
+     * server-only features (vehicle fall damage, cobweb release, boat escape) stay on the server; a
+     * client copy reads them as their defaults.
      */
     public void writeRules(ByteBuf buf) {
         buf.writeBoolean(restrictionsApplyInCreative);
@@ -141,6 +143,7 @@ public final class Settings {
         buf.writeBoolean(climbingRanged);
         buf.writeBoolean(climbingItemBlocklist);
         writeIds(buf, blockedItemIds);
+        buf.writeBoolean(bedExplosion);
     }
 
     /**
@@ -163,6 +166,7 @@ public final class Settings {
         b.climbingRanged = buf.readBoolean();
         b.climbingItemBlocklist = buf.readBoolean();
         b.blockedItemIds = readIds(buf);
+        b.bedExplosion = buf.readBoolean();
         b.diagnosticLogging = false;
         return b.build();
     }
@@ -231,6 +235,7 @@ public final class Settings {
         b.cobwebFollowsMobGriefing = Options.COBWEB_FOLLOWS_MOB_GRIEFING.read(config, problems);
         b.boatEscape = Options.BOAT_ESCAPE.read(config, problems);
         b.boatReboardTicks = toTicks(Options.BOAT_REBOARD_DELAY.read(config, problems));
+        b.bedExplosion = Options.BED_EXPLOSION.read(config, problems);
         return b.build();
     }
 
@@ -374,6 +379,11 @@ public final class Settings {
         return boatReboardTicks;
     }
 
+    /** Bed-explosion prevention: refusing a bed use that would explode, in every game mode. */
+    public boolean bedExplosion() {
+        return bedExplosion;
+    }
+
     public String message(MessageText message) {
         String text = messages.get(message);
         return text != null ? text : message.defaultText();
@@ -406,6 +416,7 @@ public final class Settings {
         boolean cobwebFollowsMobGriefing = Options.COBWEB_FOLLOWS_MOB_GRIEFING.defaultValue;
         boolean boatEscape = Options.BOAT_ESCAPE.defaultValue;
         int boatReboardTicks = toTicks(Options.BOAT_REBOARD_DELAY.defaultValue);
+        boolean bedExplosion = Options.BED_EXPLOSION.defaultValue;
         final Map<MessageText, String> messages = new EnumMap<>(MessageText.class);
         final ConfigProblems problems = new ConfigProblems();
 

@@ -27,6 +27,7 @@ final class Options {
     static final String VEHICLE_FALL_CATEGORY = "vehicleFall";
     static final String COBWEB_CATEGORY = "cobwebRelease";
     static final String BOAT_ESCAPE_CATEGORY = "boatEscape";
+    static final String BED_CATEGORY = "bedExplosion";
 
     static final BooleanOption RESTRICTIONS_IN_CREATIVE = new BooleanOption(GENERAL, "restrictionsApplyInCreative", false,
             "Apply the player restrictions to players in Creative mode too. Bed-explosion prevention always applies. Restart required.");
@@ -74,6 +75,8 @@ final class Options {
             "When a mob (any living entity except a player) riding a vanilla boat takes damage, it leaves the boat and is placed next to it where it cannot suffocate. Modded boats and ships are not covered; minecarts are not affected. Restart required.");
     static final DoubleOption BOAT_REBOARD_DELAY = new DoubleOption(BOAT_ESCAPE_CATEGORY, "reboardSeconds", 5.0, 0.0, 60.0,
             "How long a mob that left a boat this way cannot board any boat, in seconds. The game itself keeps any mob that leaves a vehicle from boarding again for 3 seconds, so a value under 3 acts as 3. Restart required.");
+    static final BooleanOption BED_EXPLOSION = new BooleanOption(BED_CATEGORY, "enabled", true,
+            "Refuse using a bed where it would explode (the Nether, the End, and any dimension whose own rule says so), in every game mode, Creative too. The bed stays and nothing explodes. Covers vanilla beds, beds that use the vanilla bed behavior, and Comforts sleeping bags and hammocks. Restart required.");
     static final BooleanOption CLIMBING_RANGED = new BooleanOption(CLIMBING_RANGED_CATEGORY, "enabled", true,
             "Refuse bows, crossbows, throwing weapons, thrown items (snowballs, eggs, ender pearls, splash and lingering potions, experience bottles, dynamite) and fishing rods while on a ladder or vine above the ground and for the release delay after letting go. A draw, load or charge in progress stops without firing and without cost. Restart required.");
 
