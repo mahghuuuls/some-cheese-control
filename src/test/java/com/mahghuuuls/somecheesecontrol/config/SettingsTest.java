@@ -190,4 +190,40 @@ class SettingsTest {
         assertEquals(2, problems.all().size());
         assertTrue(problems.all().get(0).contains("general.messageIntervalSeconds"));
     }
+
+    @Test
+    void theStatusViewListsEveryFeatureAndOption() {
+        Settings defaults = Settings.defaults();
+        assertEquals(Arrays.asList("unsupportedLiquidPlacement", "airborneEmptying", "handOnlyCarrying", "climbingMelee", "climbingRanged",
+                "climbingItemBlocklist", "cobwebRelease", "boatEscape", "vehicleFall", "bedExplosion", "general.messagesEnabled"),
+                new java.util.ArrayList<>(defaults.featureSwitches().keySet()));
+        java.util.List<String> values = defaults.valueLines();
+        assertTrue(values.contains("climbing.releaseDelaySeconds = 0.50"), values.toString());
+        assertTrue(values.contains("boatEscape.reboardSeconds = 5.00"), values.toString());
+        assertTrue(values.contains("general.messageIntervalSeconds = 2.00"), values.toString());
+        assertTrue(values.contains("handOnlyCarrying.allowedHand = either"), values.toString());
+        assertTrue(values.contains("handOnlyCarrying.items = [minecraft:water_bucket, minecraft:lava_bucket]"), values.toString());
+        java.util.Set<String> optionPaths = new java.util.HashSet<>();
+        for (java.lang.reflect.Field field : Options.class.getDeclaredFields()) {
+            try {
+                java.lang.reflect.Method path = field.getType().getDeclaredMethod("path");
+                field.setAccessible(true);
+                path.setAccessible(true);
+                optionPaths.add((String) path.invoke(field.get(null)));
+            } catch (NoSuchMethodException notAnOption) {
+                // a category name or another constant
+            } catch (ReflectiveOperationException e) {
+                throw new AssertionError(e);
+            }
+        }
+        for (MessageText message : MessageText.values()) {
+            optionPaths.add(Options.MESSAGE_TEXTS + "." + message.key());
+        }
+        java.util.List<String> shownPaths = new java.util.ArrayList<>();
+        for (String value : values) {
+            shownPaths.add(value.substring(0, value.indexOf(" = ")));
+        }
+        assertEquals(optionPaths, new java.util.HashSet<>(shownPaths), "every option and every message text is shown");
+        assertEquals(shownPaths.size(), new java.util.HashSet<>(shownPaths).size(), "each is shown once");
+    }
 }

@@ -10,6 +10,8 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -382,6 +384,71 @@ public final class Settings {
     /** Bed-explosion prevention: refusing a bed use that would explode, in every game mode. */
     public boolean bedExplosion() {
         return bedExplosion;
+    }
+
+    /**
+     * Each feature's switch as it is in effect, by its configuration category (the restriction
+     * messages by their option), in the order of the features in the mod's description: what the status
+     * command lists as the features that are on or off.
+     */
+    public Map<String, Boolean> featureSwitches() {
+        Map<String, Boolean> switches = new LinkedHashMap<>();
+        switches.put(Options.UNSUPPORTED_LIQUID.category, unsupportedLiquidPlacement);
+        switches.put(Options.AIRBORNE_EMPTYING.category, airborneEmptying);
+        switches.put(Options.CARRYING.category, handOnlyCarrying);
+        switches.put(Options.CLIMBING_MELEE.category, climbingMelee);
+        switches.put(Options.CLIMBING_RANGED.category, climbingRanged);
+        switches.put(Options.CLIMBING_ITEM_BLOCKLIST.category, climbingItemBlocklist);
+        switches.put(Options.COBWEB_RELEASE.category, cobwebRelease);
+        switches.put(Options.BOAT_ESCAPE.category, boatEscape);
+        switches.put(Options.VEHICLE_FALL.category, vehicleFall);
+        switches.put(Options.BED_EXPLOSION.category, bedExplosion);
+        switches.put(Options.MESSAGES_ENABLED.path(), messagesEnabled);
+        return switches;
+    }
+
+    /**
+     * Every option, one {@code path = value} line each, in the units of the file: what the status
+     * command lists as the active configuration. Switches and numbers are as in effect after
+     * validation; id lists are as written, and the ids that were skipped are named among the
+     * configuration problems. Message texts are listed under {@code general.messageTexts}.
+     */
+    public List<String> valueLines() {
+        List<String> lines = new ArrayList<>();
+        line(lines, Options.RESTRICTIONS_IN_CREATIVE.path(), restrictionsApplyInCreative);
+        line(lines, Options.DIAGNOSTIC_LOGGING.path(), diagnosticLogging);
+        line(lines, Options.MESSAGES_ENABLED.path(), messagesEnabled);
+        line(lines, Options.MESSAGE_INTERVAL.path(), seconds(messageIntervalMillis / 1000.0));
+        line(lines, Options.UNSUPPORTED_LIQUID.path(), unsupportedLiquidPlacement);
+        line(lines, Options.AIRBORNE_EMPTYING.path(), airborneEmptying);
+        line(lines, Options.CARRYING.path(), handOnlyCarrying);
+        line(lines, Options.CARRIED_ITEMS.path(), carriedItemIds);
+        line(lines, Options.ALLOWED_HAND.path(), allowedHand.configValue());
+        line(lines, Options.CLIMBING_RELEASE_DELAY.path(), seconds(climbingReleaseDelayTicks / 20.0));
+        line(lines, Options.EXTRA_CLIMBABLE_BLOCKS.path(), extraClimbableBlockIds);
+        line(lines, Options.CLIMBING_MELEE.path(), climbingMelee);
+        line(lines, Options.CLIMBING_RANGED.path(), climbingRanged);
+        line(lines, Options.CLIMBING_ITEM_BLOCKLIST.path(), climbingItemBlocklist);
+        line(lines, Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.path(), blockedItemIds);
+        line(lines, Options.COBWEB_RELEASE.path(), cobwebRelease);
+        line(lines, Options.EXTRA_WEB_BLOCKS.path(), extraWebBlockIds);
+        line(lines, Options.COBWEB_FOLLOWS_MOB_GRIEFING.path(), cobwebFollowsMobGriefing);
+        line(lines, Options.BOAT_ESCAPE.path(), boatEscape);
+        line(lines, Options.BOAT_REBOARD_DELAY.path(), seconds(boatReboardTicks / 20.0));
+        line(lines, Options.VEHICLE_FALL.path(), vehicleFall);
+        line(lines, Options.BED_EXPLOSION.path(), bedExplosion);
+        for (MessageText message : MessageText.values()) {
+            line(lines, Options.MESSAGE_TEXTS + "." + message.key(), "\"" + message(message) + "\"");
+        }
+        return lines;
+    }
+
+    private static void line(List<String> lines, String path, Object value) {
+        lines.add(path + " = " + value);
+    }
+
+    private static String seconds(double value) {
+        return String.format(Locale.ROOT, "%.2f", value);
     }
 
     public String message(MessageText message) {

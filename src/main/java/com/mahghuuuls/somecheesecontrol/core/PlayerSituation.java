@@ -14,6 +14,8 @@ import net.minecraft.util.math.MathHelper;
 import java.util.Collections;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 /**
  * The only owner of what "airborne" and "on a climbable block" mean for a player, and of what
  * holds a vehicle up (ground, water, or nothing), which the airborne rule and the vehicle fall rules
@@ -72,6 +74,17 @@ public final class PlayerSituation {
     }
 
     /**
+     * The block the player climbs on, for the inspect command: the block at the player's feet when
+     * {@link #isOnClimbableBlock} says the player is on a climbable block; null otherwise. That is the
+     * block the game tests, unless Forge's "fullBoundingBoxLadders" option is on, which lets a
+     * climbable block anywhere in the player's body count; the feet block is then still named.
+     */
+    @Nullable
+    public static BlockPos climbingBlock(EntityPlayer player) {
+        return isOnClimbableBlock(player) ? feet(player) : null;
+    }
+
+    /**
      * True when the block at the player's feet is climbable: the game's own test (ladders, vines and
      * modded blocks that declare themselves climbable), or one of the configured extra blocks at the
      * same position. The extra blocks are those of the player's side.
@@ -85,9 +98,12 @@ public final class PlayerSituation {
         if (extraClimbable.isEmpty() || player.isSpectator()) {
             return false;
         }
-        BlockPos feet = new BlockPos(MathHelper.floor(player.posX), MathHelper.floor(player.getEntityBoundingBox().minY),
-                MathHelper.floor(player.posZ));
-        return extraClimbable.contains(player.world.getBlockState(feet).getBlock());
+        return extraClimbable.contains(player.world.getBlockState(feet(player)).getBlock());
+    }
+
+    /** The block at the player's feet, where the game looks for a ladder. */
+    private static BlockPos feet(EntityPlayer player) {
+        return new BlockPos(MathHelper.floor(player.posX), MathHelper.floor(player.getEntityBoundingBox().minY), MathHelper.floor(player.posZ));
     }
 
     /**

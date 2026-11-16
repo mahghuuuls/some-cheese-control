@@ -53,4 +53,28 @@ class ClimbingRulesTest {
     void neverClimbedIsNeverRestricted() {
         assertFalse(ClimbingRules.isRestricted(false, false, ClimbingRules.NEVER, 5, DELAY));
     }
+
+    @Test
+    void theReleaseDelayLeftCountsDownAfterLettingGo() {
+        assertEquals(11, ClimbingRules.releaseTicksLeft(false, false, 100, 100, DELAY), "the holding tick and the 10 delay ticks after it");
+        assertEquals(4, ClimbingRules.releaseTicksLeft(false, false, 100, 107, DELAY));
+        assertEquals(1, ClimbingRules.releaseTicksLeft(false, false, 100, 110, DELAY), "the last tick of the delay");
+        assertEquals(0, ClimbingRules.releaseTicksLeft(false, false, 100, 111, DELAY), "the delay is over");
+        assertEquals(0, ClimbingRules.releaseTicksLeft(true, false, 100, 105, DELAY), "holding on: no delay runs yet");
+        assertEquals(0, ClimbingRules.releaseTicksLeft(false, true, 100, 105, DELAY), "standing on the ground ends it");
+        assertEquals(0, ClimbingRules.releaseTicksLeft(false, false, ClimbingRules.NEVER, 105, DELAY), "never held on");
+    }
+
+    @Test
+    void theStateIsOnExactlyWhileHoldingOrWhileDelayTicksAreLeft() {
+        for (long now = 95; now <= 115; now++) {
+            for (boolean holding : new boolean[] {false, true}) {
+                for (boolean supported : new boolean[] {false, true}) {
+                    boolean on = ClimbingRules.isRestricted(holding, supported, 100, now, DELAY);
+                    long left = ClimbingRules.releaseTicksLeft(holding, supported, 100, now, DELAY);
+                    assertEquals(!supported && (holding || left > 0), on, "tick " + now + " holding " + holding + " supported " + supported);
+                }
+            }
+        }
+    }
 }

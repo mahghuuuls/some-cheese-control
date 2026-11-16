@@ -7,6 +7,7 @@ import com.mahghuuuls.somecheesecontrol.config.Settings;
 import com.mahghuuuls.somecheesecontrol.core.ActualDamage;
 import com.mahghuuuls.somecheesecontrol.core.ClickGuard;
 import com.mahghuuuls.somecheesecontrol.core.ServerState;
+import com.mahghuuuls.somecheesecontrol.diagnostic.SccCommand;
 import com.mahghuuuls.somecheesecontrol.feature.bed.BedFeature;
 import com.mahghuuuls.somecheesecontrol.feature.boatescape.BoatEscape;
 import com.mahghuuuls.somecheesecontrol.feature.carry.CarryFeature;
@@ -15,6 +16,7 @@ import com.mahghuuuls.somecheesecontrol.feature.cobweb.CobwebRelease;
 import com.mahghuuuls.somecheesecontrol.feature.liquid.LiquidPlacementFeature;
 import com.mahghuuuls.somecheesecontrol.feature.vehiclefall.VehicleFallTracker;
 import com.mahghuuuls.somecheesecontrol.integration.IntegrationGate;
+import com.mahghuuuls.somecheesecontrol.integration.originalmods.OriginalMods;
 import com.mahghuuuls.somecheesecontrol.network.Network;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -85,6 +87,7 @@ public class SomeCheeseControlMod {
             MinecraftForge.EVENT_BUS.register(new BedFeature());
         }
         IntegrationGate.startAll();
+        OriginalMods.warnInstalled();
         if (event.getSide().isClient()) {
             EarlyClientRefusal.register();
             ScreenPlacementCheck.register();
@@ -101,6 +104,7 @@ public class SomeCheeseControlMod {
     @Mod.EventHandler
     public void serverStarting(FMLServerStartingEvent event) {
         ServerState.reset();
+        event.registerServerCommand(new SccCommand());
     }
 
     @Mod.EventHandler

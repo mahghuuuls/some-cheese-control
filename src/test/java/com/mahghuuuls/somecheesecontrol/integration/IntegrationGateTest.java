@@ -56,6 +56,33 @@ class IntegrationGateTest {
     }
 
     @Test
+    void aPresentModWithoutIntegrationCodeIsOnlyDetected() {
+        IntegrationGate.Record record = IntegrationGate.start(new IntegrationGate.Entry("jass", "JASS", null), id -> true);
+        assertEquals(IntegrationGate.State.DETECTED, record.state());
+    }
+
+    @Test
+    void theModsWithoutIntegrationCodeInThisVersionAreKnown() {
+        List<String> detectOnly = new java.util.ArrayList<>();
+        for (IntegrationGate.Entry entry : IntegrationGate.ENTRIES) {
+            if (entry.entryClass == null) {
+                detectOnly.add(entry.modId);
+            }
+        }
+        // Wizardry and Spartan Shields leave this list when their integrations get entry classes.
+        assertEquals(Arrays.asList("ebwizardry", "spartanweaponry", "spartanshields", "bettercombatmod", "jass", "jawms"), detectOnly);
+    }
+
+    @Test
+    void theStatusListNamesEveryIntegratedMod() {
+        java.util.List<String> ids = new java.util.ArrayList<>();
+        for (IntegrationGate.Entry entry : IntegrationGate.ENTRIES) {
+            ids.add(entry.modId);
+        }
+        assertEquals(Arrays.asList("ebwizardry", "spartanweaponry", "spartanshields", "bettercombatmod", "comforts", "jass", "jawms"), ids);
+    }
+
+    @Test
     void aPresentModStartsItsIntegration() {
         int before = started;
         IntegrationGate.Record record = IntegrationGate.start(entry(Working.class.getName()), id -> true);
@@ -80,6 +107,9 @@ class IntegrationGateTest {
     @Test
     void everyEntryNamesAnIntegrationClassInItsOwnPackage() throws ClassNotFoundException {
         for (IntegrationGate.Entry entry : IntegrationGate.ENTRIES) {
+            if (entry.entryClass == null) {
+                continue;
+            }
             assertTrue(entry.entryClass.startsWith("com.mahghuuuls.somecheesecontrol.integration." + entry.modId + "."), entry.entryClass);
             Class<?> type = Class.forName(entry.entryClass, false, IntegrationGateTest.class.getClassLoader());
             assertTrue(IntegrationGate.Integration.class.isAssignableFrom(type), entry.entryClass);

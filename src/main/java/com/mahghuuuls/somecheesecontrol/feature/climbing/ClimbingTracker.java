@@ -35,6 +35,12 @@ public final class ClimbingTracker {
                 Settings.get().climbingReleaseDelayTicks());
     }
 
+    /** Server ticks of the release delay still to run for the player, for the inspect command; 0 when none. */
+    public static long releaseTicksLeft(EntityPlayer player) {
+        return ClimbingRules.releaseTicksLeft(PlayerSituation.isOnClimbableBlock(player), isSupported(player), last(player), ServerState.tick(),
+                Settings.get().climbingReleaseDelayTicks());
+    }
+
     /** Records this tick's facts for the player; called once per player per server tick. */
     static void update(EntityPlayer player) {
         Map<UUID, Long> map = ServerState.get().get(SLOT).byPlayer;

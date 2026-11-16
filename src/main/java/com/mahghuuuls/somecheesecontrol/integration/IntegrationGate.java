@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
+
 /**
  * The only owner of the optional integrations: which exist, whether their mod is present, loading
  * their entry class by name, isolating their failures, and the record the status command reads.
@@ -25,9 +27,18 @@ public final class IntegrationGate {
 
     private static final Logger LOGGER = LogManager.getLogger("SomeCheeseControl/Integrations");
 
-    /** Every integration: mod id, display name, entry class. */
+    /**
+     * Every integrated mod, in the order the status command lists them: mod id, display name, and the
+     * entry class, or null for a mod this version only detects.
+     */
     static final List<Entry> ENTRIES = Collections.unmodifiableList(Arrays.asList(
-            new Entry("comforts", "Comforts", "com.mahghuuuls.somecheesecontrol.integration.comforts.ComfortsIntegration")));
+            new Entry("ebwizardry", "Electroblob's Wizardry", null),
+            new Entry("spartanweaponry", "Spartan Weaponry", null),
+            new Entry("spartanshields", "Spartan Shields", null),
+            new Entry("bettercombatmod", "RLCombat", null),
+            new Entry("comforts", "Comforts", "com.mahghuuuls.somecheesecontrol.integration.comforts.ComfortsIntegration"),
+            new Entry("jass", "JASS", null),
+            new Entry("jawms", "JAWMS", null)));
 
     private static final Map<String, Record> RECORDS = new LinkedHashMap<>();
 
@@ -47,6 +58,8 @@ public final class IntegrationGate {
     public enum State {
         /** Its mod is not installed; nothing was loaded. */
         ABSENT,
+        /** Installed; this version has no integration code for it (covered by Forge events, or detected only). */
+        DETECTED,
         /** Started. */
         ACTIVE,
         /** Failed while starting or later; disabled. */
@@ -68,6 +81,9 @@ public final class IntegrationGate {
     static Record start(Entry entry, Predicate<String> modLoaded) {
         if (!modLoaded.test(entry.modId)) {
             return new Record(entry, State.ABSENT, Collections.<String>emptyList());
+        }
+        if (entry.entryClass == null) {
+            return new Record(entry, State.DETECTED, Collections.<String>emptyList());
         }
         try {
             Integration integration = (Integration) Class.forName(entry.entryClass).getConstructor().newInstance();
@@ -102,9 +118,10 @@ public final class IntegrationGate {
     static final class Entry {
         final String modId;
         final String name;
+        @Nullable
         final String entryClass;
 
-        Entry(String modId, String name, String entryClass) {
+        Entry(String modId, String name, @Nullable String entryClass) {
             this.modId = modId;
             this.name = name;
             this.entryClass = entryClass;

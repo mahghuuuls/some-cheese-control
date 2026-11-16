@@ -38,12 +38,18 @@ public final class ClimbingRules {
         if (supported) {
             return false;
         }
-        if (onClimbable) {
-            return true;
+        return onClimbable || releaseTicksLeft(false, false, lastHoldingTick, nowTick, delayTicks) > 0;
+    }
+
+    /**
+     * The ticks, this one included, in which the release delay still keeps the state on after
+     * letting go: the delay holds through {@code delayTicks} ticks after the last holding tick. 0 while
+     * holding on, when supported, when no holding was recorded, or once the delay is over.
+     */
+    public static long releaseTicksLeft(boolean onClimbable, boolean supported, long lastHoldingTick, long nowTick, int delayTicks) {
+        if (supported || onClimbable || lastHoldingTick == NEVER) {
+            return 0;
         }
-        if (lastHoldingTick == NEVER) {
-            return false;
-        }
-        return nowTick - lastHoldingTick <= delayTicks;
+        return Math.max(0, delayTicks - (nowTick - lastHoldingTick) + 1);
     }
 }
