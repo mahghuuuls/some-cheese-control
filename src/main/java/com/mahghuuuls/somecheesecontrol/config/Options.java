@@ -25,6 +25,7 @@ final class Options {
     static final String CLIMBING_RANGED_CATEGORY = "climbingRanged";
     static final String CLIMBING_ITEM_BLOCKLIST_CATEGORY = "climbingItemBlocklist";
     static final String VEHICLE_FALL_CATEGORY = "vehicleFall";
+    static final String COBWEB_CATEGORY = "cobwebRelease";
 
     static final BooleanOption RESTRICTIONS_IN_CREATIVE = new BooleanOption(GENERAL, "restrictionsApplyInCreative", false,
             "Apply the player restrictions to players in Creative mode too. Bed-explosion prevention always applies. Restart required.");
@@ -61,6 +62,13 @@ final class Options {
             "Refuse every use of the items in the list below while climbing. With an empty list this adds nothing. Restart required.");
     static final BooleanOption VEHICLE_FALL = new BooleanOption(VEHICLE_FALL_CATEGORY, "enabled", true,
             "Fall damage for boats and minecarts: a player who boards one while falling keeps the fall, and a player in a boat that falls takes the fall damage when it lands on a block. Water and rails stay safe; Feather Falling applies. Restart required.");
+    static final BooleanOption COBWEB_RELEASE = new BooleanOption(COBWEB_CATEGORY, "enabled", true,
+            "When a mob (any living entity except a player) takes damage, remove the cobwebs inside its body, with the normal break particles and sound and no item drops. Any damage counts, also a hit that only removes absorption hearts and a hit that kills. Restart required.");
+    static final StringListOption EXTRA_WEB_BLOCKS = new StringListOption(COBWEB_CATEGORY, "extraWebBlocks",
+            new String[0],
+            "Blocks that also count as cobwebs, one modid:name per line. The vanilla cobweb and modded webs made from it count already. List web-like blocks only: a removed block drops no item, but a block that holds items still spills them. Example: somemod:thick_web. Restart required.");
+    static final BooleanOption COBWEB_FOLLOWS_MOB_GRIEFING = new BooleanOption(COBWEB_CATEGORY, "followMobGriefing", false,
+            "When true, cobwebs are not removed while the mobGriefing game rule is false. When false (the default), the game rule does not matter. Restart required.");
     static final BooleanOption CLIMBING_RANGED = new BooleanOption(CLIMBING_RANGED_CATEGORY, "enabled", true,
             "Refuse bows, crossbows, throwing weapons, thrown items (snowballs, eggs, ender pearls, splash and lingering potions, experience bottles, dynamite) and fishing rods while on a ladder or vine above the ground and for the release delay after letting go. A draw, load or charge in progress stops without firing and without cost. Restart required.");
 

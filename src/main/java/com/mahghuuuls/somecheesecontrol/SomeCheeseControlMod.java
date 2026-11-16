@@ -8,6 +8,7 @@ import com.mahghuuuls.somecheesecontrol.core.ClickGuard;
 import com.mahghuuuls.somecheesecontrol.core.ServerState;
 import com.mahghuuuls.somecheesecontrol.feature.carry.CarryFeature;
 import com.mahghuuuls.somecheesecontrol.feature.climbing.ClimbingFeature;
+import com.mahghuuuls.somecheesecontrol.feature.cobweb.CobwebRelease;
 import com.mahghuuuls.somecheesecontrol.feature.liquid.LiquidPlacementFeature;
 import com.mahghuuuls.somecheesecontrol.feature.vehiclefall.VehicleFallTracker;
 import com.mahghuuuls.somecheesecontrol.network.Network;
@@ -64,6 +65,9 @@ public class SomeCheeseControlMod {
         }
         if (VehicleFallTracker.isNeeded(settings)) {
             MinecraftForge.EVENT_BUS.register(new VehicleFallTracker());
+        }
+        if (CobwebRelease.isNeeded(settings)) {
+            MinecraftForge.EVENT_BUS.register(new CobwebRelease(settings));
         }
         if (event.getSide().isClient()) {
             EarlyClientRefusal.register();

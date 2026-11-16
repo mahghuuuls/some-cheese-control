@@ -28,6 +28,9 @@ class SettingsTest {
         assertTrue(Options.CLIMBING_RANGED.defaultValue, "every feature is on after installation");
         assertTrue(Options.CLIMBING_ITEM_BLOCKLIST.defaultValue, "every feature is on after installation");
         assertTrue(Options.VEHICLE_FALL.defaultValue, "every feature is on after installation");
+        assertTrue(Options.COBWEB_RELEASE.defaultValue, "every feature is on after installation");
+        assertTrue(Options.EXTRA_WEB_BLOCKS.defaults().isEmpty(), "no extra web blocks by default");
+        assertFalse(Options.COBWEB_FOLLOWS_MOB_GRIEFING.defaultValue, "cobweb release ignores mobGriefing by default");
         assertTrue(Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.defaults().isEmpty(), "the climbing item blocklist is empty by default");
         assertEquals(0.5, Options.CLIMBING_RELEASE_DELAY.defaultValue, "half a second after letting go");
         assertEquals(0.0, Options.CLIMBING_RELEASE_DELAY.min);
@@ -57,6 +60,9 @@ class SettingsTest {
         assertEquals(Settings.toMillis(Options.MESSAGE_INTERVAL.defaultValue), defaults.messageIntervalMillis());
         assertEquals(Options.RESTRICTIONS_IN_CREATIVE.defaultValue, defaults.restrictionsApplyInCreative());
         assertEquals(Options.DIAGNOSTIC_LOGGING.defaultValue, defaults.diagnosticLogging());
+        assertEquals(Options.COBWEB_RELEASE.defaultValue, defaults.cobwebRelease());
+        assertEquals(Options.EXTRA_WEB_BLOCKS.defaults(), defaults.extraWebBlockIds());
+        assertEquals(Options.COBWEB_FOLLOWS_MOB_GRIEFING.defaultValue, defaults.cobwebFollowsMobGriefing());
         assertTrue(defaults.problems().isEmpty());
     }
 
@@ -88,6 +94,9 @@ class SettingsTest {
         assertEquals("climbingItemBlocklist.items", Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.path());
         assertEquals("climbing.releaseDelaySeconds", Options.CLIMBING_RELEASE_DELAY.path());
         assertEquals("climbing.extraClimbableBlocks", Options.EXTRA_CLIMBABLE_BLOCKS.path());
+        assertEquals("cobwebRelease.enabled", Options.COBWEB_RELEASE.path());
+        assertEquals("cobwebRelease.extraWebBlocks", Options.EXTRA_WEB_BLOCKS.path());
+        assertEquals("cobwebRelease.followMobGriefing", Options.COBWEB_FOLLOWS_MOB_GRIEFING.path());
     }
 
     @Test
@@ -108,6 +117,19 @@ class SettingsTest {
         assertFalse(Settings.read(config).vehicleFall(), "the switch is read from vehicleFall.enabled");
         assertTrue(Settings.read(new Configuration()).vehicleFall(), "on when the file does not have it yet");
         assertEquals("vehicleFall.enabled", Options.VEHICLE_FALL.path());
+    }
+
+    @Test
+    void cobwebReleaseOptionsAreReadFromTheirOwnKeys() {
+        Configuration config = new Configuration();
+        config.get("cobwebRelease", "enabled", true).set(false);
+        config.get("cobwebRelease", "followMobGriefing", false).set(true);
+        config.get("cobwebRelease", "extraWebBlocks", new String[0]).set(new String[]{"somemod:thick_web"});
+        Settings settings = Settings.read(config);
+        assertFalse(settings.cobwebRelease());
+        assertTrue(settings.cobwebFollowsMobGriefing());
+        assertEquals(Arrays.asList("somemod:thick_web"), settings.extraWebBlockIds());
+        assertTrue(settings.vehicleFall(), "another feature's switch is a separate key");
     }
 
     @Test

@@ -57,9 +57,13 @@ public final class Settings {
     private final boolean climbingItemBlocklist;
     private final List<String> blockedItemIds;
     private final boolean vehicleFall;
+    private final boolean cobwebRelease;
+    private final List<String> extraWebBlockIds;
+    private final boolean cobwebFollowsMobGriefing;
     private Set<Item> carriedItems = Collections.emptySet();
     private Set<Block> extraClimbableBlocks = Collections.emptySet();
     private Set<Item> blockedItems = Collections.emptySet();
+    private Set<Block> extraWebBlocks = Collections.emptySet();
     private boolean resolved;
     private final Map<MessageText, String> messages;
     private final ConfigProblems problems;
@@ -81,6 +85,9 @@ public final class Settings {
         this.climbingItemBlocklist = b.climbingItemBlocklist;
         this.blockedItemIds = b.blockedItemIds;
         this.vehicleFall = b.vehicleFall;
+        this.cobwebRelease = b.cobwebRelease;
+        this.extraWebBlockIds = b.extraWebBlockIds;
+        this.cobwebFollowsMobGriefing = b.cobwebFollowsMobGriefing;
         this.messages = Collections.unmodifiableMap(new EnumMap<>(b.messages));
         this.problems = b.problems;
     }
@@ -114,7 +121,7 @@ public final class Settings {
      * Writes the values a client needs to apply the rules as the server does: the switches of the
      * rules a client checks, the item and block ids as configured, the allowed hand, the release
      * delay and the Creative setting. Message texts, intervals, diagnostics and the switches of
-     * server-only features (vehicle fall damage) stay on the server; a client copy reads them as
+     * server-only features (vehicle fall damage, cobweb release) stay on the server; a client copy reads them as
      * their defaults.
      */
     public void writeRules(ByteBuf buf) {
@@ -215,6 +222,9 @@ public final class Settings {
         b.climbingItemBlocklist = Options.CLIMBING_ITEM_BLOCKLIST.read(config, problems);
         b.blockedItemIds = Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.read(config);
         b.vehicleFall = Options.VEHICLE_FALL.read(config, problems);
+        b.cobwebRelease = Options.COBWEB_RELEASE.read(config, problems);
+        b.extraWebBlockIds = Options.EXTRA_WEB_BLOCKS.read(config);
+        b.cobwebFollowsMobGriefing = Options.COBWEB_FOLLOWS_MOB_GRIEFING.read(config, problems);
         return b.build();
     }
 
@@ -273,6 +283,7 @@ public final class Settings {
                 Options.EXTRA_CLIMBABLE_BLOCKS.path(), "block", problems);
         blockedItems = RegistryIds.resolve(ForgeRegistries.ITEMS, blockedItemIds, Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.path(), "item",
                 problems);
+        extraWebBlocks = RegistryIds.resolve(ForgeRegistries.BLOCKS, extraWebBlockIds, Options.EXTRA_WEB_BLOCKS.path(), "block", problems);
         resolved = true;
     }
 
@@ -327,6 +338,26 @@ public final class Settings {
         return vehicleFall;
     }
 
+    /** Cobweb release: removing the cobwebs inside a mob's body when it takes actual damage. */
+    public boolean cobwebRelease() {
+        return cobwebRelease;
+    }
+
+    /** The extra web block ids as written, before resolution. */
+    public List<String> extraWebBlockIds() {
+        return extraWebBlockIds;
+    }
+
+    /** Configured extra web blocks; empty until {@link #resolveRegistryEntries()} has run. */
+    public Set<Block> extraWebBlocks() {
+        return extraWebBlocks;
+    }
+
+    /** True when cobweb release follows the {@code mobGriefing} game rule. */
+    public boolean cobwebFollowsMobGriefing() {
+        return cobwebFollowsMobGriefing;
+    }
+
     public String message(MessageText message) {
         String text = messages.get(message);
         return text != null ? text : message.defaultText();
@@ -354,6 +385,9 @@ public final class Settings {
         boolean climbingItemBlocklist = Options.CLIMBING_ITEM_BLOCKLIST.defaultValue;
         List<String> blockedItemIds = Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.defaults();
         boolean vehicleFall = Options.VEHICLE_FALL.defaultValue;
+        boolean cobwebRelease = Options.COBWEB_RELEASE.defaultValue;
+        List<String> extraWebBlockIds = Options.EXTRA_WEB_BLOCKS.defaults();
+        boolean cobwebFollowsMobGriefing = Options.COBWEB_FOLLOWS_MOB_GRIEFING.defaultValue;
         final Map<MessageText, String> messages = new EnumMap<>(MessageText.class);
         final ConfigProblems problems = new ConfigProblems();
 
