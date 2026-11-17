@@ -69,8 +69,13 @@ class IntegrationGateTest {
                 detectOnly.add(entry.modId);
             }
         }
-        // Wizardry and Spartan Shields leave this list when their integrations get entry classes.
-        assertEquals(Arrays.asList("ebwizardry", "spartanweaponry", "spartanshields", "bettercombatmod", "jass", "jawms"), detectOnly);
+        // Spartan Shields leaves this list when its integration gets an entry class.
+        assertEquals(Arrays.asList("spartanweaponry", "spartanshields", "bettercombatmod", "jass", "jawms"), detectOnly);
+    }
+
+    /** The integration package of a mod: its mod id, except Wizardry's ({@code ebwizardry}), named {@code wizardry} in the architecture. */
+    private static String packageOf(String modId) {
+        return "ebwizardry".equals(modId) ? "wizardry" : modId;
     }
 
     @Test
@@ -110,7 +115,7 @@ class IntegrationGateTest {
             if (entry.entryClass == null) {
                 continue;
             }
-            assertTrue(entry.entryClass.startsWith("com.mahghuuuls.somecheesecontrol.integration." + entry.modId + "."), entry.entryClass);
+            assertTrue(entry.entryClass.startsWith("com.mahghuuuls.somecheesecontrol.integration." + packageOf(entry.modId) + "."), entry.entryClass);
             Class<?> type = Class.forName(entry.entryClass, false, IntegrationGateTest.class.getClassLoader());
             assertTrue(IntegrationGate.Integration.class.isAssignableFrom(type), entry.entryClass);
         }

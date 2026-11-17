@@ -38,6 +38,7 @@ class SettingsMessageFormatTest {
         b.extraClimbableBlockIds = Collections.singletonList("minecraft:scaffold");
         b.climbingMelee = !Options.CLIMBING_MELEE.defaultValue;
         b.climbingRanged = !Options.CLIMBING_RANGED.defaultValue;
+        b.climbingWizardry = !Options.CLIMBING_WIZARDRY.defaultValue;
         b.climbingItemBlocklist = !Options.CLIMBING_ITEM_BLOCKLIST.defaultValue;
         b.blockedItemIds = Arrays.asList("minecraft:lead", "minecraft:name_tag", "minecraft:flint_and_steel");
         b.bedExplosion = !Options.BED_EXPLOSION.defaultValue;
@@ -56,6 +57,7 @@ class SettingsMessageFormatTest {
         assertEquals(sent.extraClimbableBlockIds(), received.extraClimbableBlockIds());
         assertEquals(sent.climbingMelee(), received.climbingMelee());
         assertEquals(sent.climbingRanged(), received.climbingRanged());
+        assertEquals(sent.climbingWizardry(), received.climbingWizardry());
         assertEquals(sent.climbingItemBlocklist(), received.climbingItemBlocklist());
         assertEquals(sent.blockedItemIds(), received.blockedItemIds());
         assertEquals(sent.bedExplosion(), received.bedExplosion());

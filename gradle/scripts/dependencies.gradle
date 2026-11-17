@@ -38,6 +38,9 @@ dependencies {
     runtimeOnly 'com.cleanroommc:strip-latest-forge-requirements:1.0'
     // Comforts 1.12.2-1.4.1.3 (CurseForge project 276951, file 2880613), compile only: integration.comforts
     compileOnly rfg.deobf('curse.maven:comforts-276951:2880613')
+    // Electroblob's Wizardry 4.3.19 (CurseForge project 265642, file 8320066,
+    //   SHA-256 8a7f94dbccac622febff5111f3b3c2ba439e1d2b2c743f2a5c31fdfcd92d241c), compile only: integration.wizardry
+    compileOnly rfg.deobf('curse.maven:electroblobs-wizardry-265642:8320066')
     // Include OSXNarratorBlocker by default for the dev env, for M1+ Macs
     runtimeOnly 'com.cleanroommc:osxnarratorblocker:1.0'
 

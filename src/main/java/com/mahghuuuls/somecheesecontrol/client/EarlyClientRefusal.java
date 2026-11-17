@@ -1,6 +1,7 @@
 package com.mahghuuuls.somecheesecontrol.client;
 
 import com.mahghuuuls.somecheesecontrol.config.Settings;
+import com.mahghuuuls.somecheesecontrol.core.CastingItems;
 import com.mahghuuuls.somecheesecontrol.core.PlayerExemptions;
 import com.mahghuuuls.somecheesecontrol.core.PlayerSituation;
 import com.mahghuuuls.somecheesecontrol.core.Rule;
@@ -145,7 +146,8 @@ public final class EarlyClientRefusal {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
-        if (refuseStep(event.getEntityPlayer(), event.getItemStack(), Moment.CLICK)) {
+        if (refuseStep(event.getEntityPlayer(), event.getItemStack(), Moment.CLICK)
+                || refusesCastingClick(event.getEntityPlayer(), event.getItemStack())) {
             cancel(event);
         }
     }
@@ -277,6 +279,21 @@ public final class EarlyClientRefusal {
             player.resetActiveHand();
             keepHeldItems(player);
         }
+    }
+
+    /**
+     * True when the click with a spell-casting item is refused by the Wizardry rule. Only the click
+     * is refused here. A spell use already in progress is ended by the server, and this client
+     * follows the server's hand state: a spell acts during its use, not at release, so a use ended
+     * here and not on the server would go on casting and spending there with nothing shown.
+     */
+    private boolean refusesCastingClick(EntityPlayer player, ItemStack stack) {
+        if (ownPlayerRules(player) == null || !settings.climbingWizardry() || !CastingItems.is(stack)
+                || !isClimbingRefused(player, Rule.CLIMBING_WIZARDRY, clickTick(player))) {
+            return false;
+        }
+        markRefusedClick(player);
+        return true;
     }
 
     /** Whether the climbing rule refuses this player at {@code tick} of the client clock. */

@@ -60,6 +60,7 @@ class SettingsTest {
         assertEquals(Options.CLIMBING_MELEE.defaultValue, defaults.climbingMelee());
         assertEquals(Options.CLIMBING_RANGED.defaultValue, defaults.climbingRanged());
         assertEquals(Options.CLIMBING_ITEM_BLOCKLIST.defaultValue, defaults.climbingItemBlocklist());
+        assertTrue(defaults.climbingWizardry(), "climbing Wizardry refusal is on by default");
         assertEquals(10, defaults.climbingReleaseDelayTicks(), "0.5 seconds is 10 ticks");
         assertEquals(Options.MESSAGES_ENABLED.defaultValue, defaults.messagesEnabled());
         assertEquals(Settings.toMillis(Options.MESSAGE_INTERVAL.defaultValue), defaults.messageIntervalMillis());
@@ -99,6 +100,7 @@ class SettingsTest {
         assertEquals("climbingMelee.enabled", Options.CLIMBING_MELEE.path());
         assertEquals("climbingRanged.enabled", Options.CLIMBING_RANGED.path());
         assertEquals("climbingItemBlocklist.enabled", Options.CLIMBING_ITEM_BLOCKLIST.path());
+        assertEquals("climbingWizardry.enabled", Options.CLIMBING_WIZARDRY.path());
         assertEquals("climbingItemBlocklist.items", Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.path());
         assertEquals("climbing.releaseDelaySeconds", Options.CLIMBING_RELEASE_DELAY.path());
         assertEquals("climbing.extraClimbableBlocks", Options.EXTRA_CLIMBABLE_BLOCKS.path());
@@ -195,7 +197,7 @@ class SettingsTest {
     void theStatusViewListsEveryFeatureAndOption() {
         Settings defaults = Settings.defaults();
         assertEquals(Arrays.asList("unsupportedLiquidPlacement", "airborneEmptying", "handOnlyCarrying", "climbingMelee", "climbingRanged",
-                "climbingItemBlocklist", "cobwebRelease", "boatEscape", "vehicleFall", "bedExplosion", "general.messagesEnabled"),
+                "climbingWizardry", "climbingItemBlocklist", "cobwebRelease", "boatEscape", "vehicleFall", "bedExplosion", "general.messagesEnabled"),
                 new java.util.ArrayList<>(defaults.featureSwitches().keySet()));
         java.util.List<String> values = defaults.valueLines();
         assertTrue(values.contains("climbing.releaseDelaySeconds = 0.50"), values.toString());

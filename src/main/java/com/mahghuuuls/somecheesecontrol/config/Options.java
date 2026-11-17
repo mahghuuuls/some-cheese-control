@@ -23,6 +23,7 @@ final class Options {
     static final String CLIMBING_STATE_CATEGORY = "climbing";
     static final String CLIMBING_MELEE_CATEGORY = "climbingMelee";
     static final String CLIMBING_RANGED_CATEGORY = "climbingRanged";
+    static final String CLIMBING_WIZARDRY_CATEGORY = "climbingWizardry";
     static final String CLIMBING_ITEM_BLOCKLIST_CATEGORY = "climbingItemBlocklist";
     static final String VEHICLE_FALL_CATEGORY = "vehicleFall";
     static final String COBWEB_CATEGORY = "cobwebRelease";
@@ -79,6 +80,9 @@ final class Options {
             "Refuse using a bed where it would explode (the Nether, the End, and any dimension whose own rule says so), in every game mode, Creative too. The bed stays and nothing explodes. Covers vanilla beds, beds that use the vanilla bed behavior, and Comforts sleeping bags and hammocks. Restart required.");
     static final BooleanOption CLIMBING_RANGED = new BooleanOption(CLIMBING_RANGED_CATEGORY, "enabled", true,
             "Refuse bows, crossbows, throwing weapons, thrown items (snowballs, eggs, ender pearls, splash and lingering potions, experience bottles, dynamite) and fishing rods while on a ladder or vine above the ground and for the release delay after letting go. A draw, load or charge in progress stops without firing and without cost. Restart required.");
+
+    static final BooleanOption CLIMBING_WIZARDRY = new BooleanOption(CLIMBING_WIZARDRY_CATEGORY, "enabled", true,
+            "Needs Electroblob's Wizardry. Refuse casting spells from a held wand, scroll or other casting item while climbing, at no cost. A charge-up in progress stops; a channeled spell stops as if released. Restart required.");
 
     private Options() {
     }

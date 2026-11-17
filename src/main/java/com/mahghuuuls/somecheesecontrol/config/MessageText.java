@@ -13,6 +13,7 @@ public enum MessageText {
     FORCED_DROP("forcedDrop", "You can only carry that item in your hand."),
     CLIMBING_MELEE("climbingMelee", "You cannot attack while climbing."),
     CLIMBING_RANGED("climbingRanged", "You cannot shoot or throw while climbing."),
+    CLIMBING_WIZARDRY("climbingWizardry", "You cannot cast spells while climbing."),
     CLIMBING_ITEM("climbingItem", "You cannot use that item while climbing."),
     BED_EXPLOSION("bedExplosion", "You cannot use a bed here; it would explode.");
 

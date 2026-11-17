@@ -56,6 +56,7 @@ public final class Settings {
     private final List<String> extraClimbableBlockIds;
     private final boolean climbingMelee;
     private final boolean climbingRanged;
+    private final boolean climbingWizardry;
     private final boolean climbingItemBlocklist;
     private final List<String> blockedItemIds;
     private final boolean vehicleFall;
@@ -87,6 +88,7 @@ public final class Settings {
         this.extraClimbableBlockIds = b.extraClimbableBlockIds;
         this.climbingMelee = b.climbingMelee;
         this.climbingRanged = b.climbingRanged;
+        this.climbingWizardry = b.climbingWizardry;
         this.climbingItemBlocklist = b.climbingItemBlocklist;
         this.blockedItemIds = b.blockedItemIds;
         this.vehicleFall = b.vehicleFall;
@@ -143,6 +145,7 @@ public final class Settings {
         writeIds(buf, extraClimbableBlockIds);
         buf.writeBoolean(climbingMelee);
         buf.writeBoolean(climbingRanged);
+        buf.writeBoolean(climbingWizardry);
         buf.writeBoolean(climbingItemBlocklist);
         writeIds(buf, blockedItemIds);
         buf.writeBoolean(bedExplosion);
@@ -166,6 +169,7 @@ public final class Settings {
         b.extraClimbableBlockIds = readIds(buf);
         b.climbingMelee = buf.readBoolean();
         b.climbingRanged = buf.readBoolean();
+        b.climbingWizardry = buf.readBoolean();
         b.climbingItemBlocklist = buf.readBoolean();
         b.blockedItemIds = readIds(buf);
         b.bedExplosion = buf.readBoolean();
@@ -229,6 +233,7 @@ public final class Settings {
         b.extraClimbableBlockIds = Options.EXTRA_CLIMBABLE_BLOCKS.read(config);
         b.climbingMelee = Options.CLIMBING_MELEE.read(config, problems);
         b.climbingRanged = Options.CLIMBING_RANGED.read(config, problems);
+        b.climbingWizardry = Options.CLIMBING_WIZARDRY.read(config, problems);
         b.climbingItemBlocklist = Options.CLIMBING_ITEM_BLOCKLIST.read(config, problems);
         b.blockedItemIds = Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.read(config);
         b.vehicleFall = Options.VEHICLE_FALL.read(config, problems);
@@ -332,6 +337,11 @@ public final class Settings {
         return climbingRanged;
     }
 
+    /** The climbing Wizardry refusal switch; it acts only where Electroblob's Wizardry is installed. */
+    public boolean climbingWizardry() {
+        return climbingWizardry;
+    }
+
     public boolean climbingItemBlocklist() {
         return climbingItemBlocklist;
     }
@@ -398,6 +408,7 @@ public final class Settings {
         switches.put(Options.CARRYING.category, handOnlyCarrying);
         switches.put(Options.CLIMBING_MELEE.category, climbingMelee);
         switches.put(Options.CLIMBING_RANGED.category, climbingRanged);
+        switches.put(Options.CLIMBING_WIZARDRY.category, climbingWizardry);
         switches.put(Options.CLIMBING_ITEM_BLOCKLIST.category, climbingItemBlocklist);
         switches.put(Options.COBWEB_RELEASE.category, cobwebRelease);
         switches.put(Options.BOAT_ESCAPE.category, boatEscape);
@@ -428,6 +439,7 @@ public final class Settings {
         line(lines, Options.EXTRA_CLIMBABLE_BLOCKS.path(), extraClimbableBlockIds);
         line(lines, Options.CLIMBING_MELEE.path(), climbingMelee);
         line(lines, Options.CLIMBING_RANGED.path(), climbingRanged);
+        line(lines, Options.CLIMBING_WIZARDRY.path(), climbingWizardry);
         line(lines, Options.CLIMBING_ITEM_BLOCKLIST.path(), climbingItemBlocklist);
         line(lines, Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.path(), blockedItemIds);
         line(lines, Options.COBWEB_RELEASE.path(), cobwebRelease);
@@ -475,6 +487,7 @@ public final class Settings {
         List<String> extraClimbableBlockIds = Options.EXTRA_CLIMBABLE_BLOCKS.defaults();
         boolean climbingMelee = Options.CLIMBING_MELEE.defaultValue;
         boolean climbingRanged = Options.CLIMBING_RANGED.defaultValue;
+        boolean climbingWizardry = Options.CLIMBING_WIZARDRY.defaultValue;
         boolean climbingItemBlocklist = Options.CLIMBING_ITEM_BLOCKLIST.defaultValue;
         List<String> blockedItemIds = Options.CLIMBING_ITEM_BLOCKLIST_ITEMS.defaults();
         boolean vehicleFall = Options.VEHICLE_FALL.defaultValue;

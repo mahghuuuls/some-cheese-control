@@ -61,11 +61,13 @@ public final class ClimbingFeature {
     /**
      * True when any climbing restriction is on, so the state must be tracked. Every climbing
      * restriction added later must be listed here, or it gets no release delay. An empty blocklist
-     * adds nothing.
+     * adds nothing. The Wizardry switch counts whether or not Electroblob's Wizardry is installed:
+     * only the Wizardry integration knows that, and the state costs one check per player tick.
      */
     public static boolean isNeeded(Settings settings) {
         return settings.climbingMelee() || settings.climbingRanged()
-                || (settings.climbingItemBlocklist() && !settings.blockedItems().isEmpty());
+                || (settings.climbingItemBlocklist() && !settings.blockedItems().isEmpty())
+                || settings.climbingWizardry();
     }
 
     @SubscribeEvent

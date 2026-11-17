@@ -32,7 +32,7 @@ public final class IntegrationGate {
      * entry class, or null for a mod this version only detects.
      */
     static final List<Entry> ENTRIES = Collections.unmodifiableList(Arrays.asList(
-            new Entry("ebwizardry", "Electroblob's Wizardry", null),
+            new Entry("ebwizardry", "Electroblob's Wizardry", "com.mahghuuuls.somecheesecontrol.integration.wizardry.WizardryIntegration"),
             new Entry("spartanweaponry", "Spartan Weaponry", null),
             new Entry("spartanshields", "Spartan Shields", null),
             new Entry("bettercombatmod", "RLCombat", null),
