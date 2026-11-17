@@ -38,7 +38,8 @@ public final class IntegrationGate {
             new Entry("bettercombatmod", "RLCombat", null),
             new Entry("comforts", "Comforts", "com.mahghuuuls.somecheesecontrol.integration.comforts.ComfortsIntegration"),
             new Entry("jass", "JASS", null),
-            new Entry("jawms", "JAWMS", null)));
+            new Entry("jawms", "JAWMS", null),
+            new Entry("fluidlogged_api", "Fluidlogged API", "com.mahghuuuls.somecheesecontrol.integration.fluidlogged.FluidloggedIntegration")));
 
     /**
      * The start of an integration's note that says why it does not act (a switch is off, a Mixin is

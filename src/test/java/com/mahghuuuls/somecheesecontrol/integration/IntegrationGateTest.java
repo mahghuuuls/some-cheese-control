@@ -72,9 +72,12 @@ class IntegrationGateTest {
         assertEquals(Arrays.asList("spartanweaponry", "bettercombatmod", "jass", "jawms"), detectOnly);
     }
 
-    /** The integration package of a mod: its mod id, except Wizardry's ({@code ebwizardry}), named {@code wizardry} in the architecture. */
+    /** The integration package of a mod: its mod id, except Wizardry's ({@code ebwizardry}, named {@code wizardry}) and Fluidlogged API's ({@code fluidlogged_api}, named {@code fluidlogged}), as in the architecture. */
     private static String packageOf(String modId) {
-        return "ebwizardry".equals(modId) ? "wizardry" : modId;
+        if ("ebwizardry".equals(modId)) {
+            return "wizardry";
+        }
+        return "fluidlogged_api".equals(modId) ? "fluidlogged" : modId;
     }
 
     @Test
@@ -83,7 +86,7 @@ class IntegrationGateTest {
         for (IntegrationGate.Entry entry : IntegrationGate.ENTRIES) {
             ids.add(entry.modId);
         }
-        assertEquals(Arrays.asList("ebwizardry", "spartanweaponry", "spartanshields", "bettercombatmod", "comforts", "jass", "jawms"), ids);
+        assertEquals(Arrays.asList("ebwizardry", "spartanweaponry", "spartanshields", "bettercombatmod", "comforts", "jass", "jawms", "fluidlogged_api"), ids);
     }
 
     @Test
