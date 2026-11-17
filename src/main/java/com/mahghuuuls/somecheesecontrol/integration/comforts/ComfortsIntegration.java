@@ -21,7 +21,7 @@ public final class ComfortsIntegration implements IntegrationGate.Integration {
         if (Settings.get().bedExplosion()) {
             MinecraftForge.EVENT_BUS.register(new SleepingBagGuard());
         } else {
-            problems.add("inactive: bed-explosion prevention is off");
+            problems.add(IntegrationGate.INACTIVE + "bed-explosion prevention is off");
         }
     }
 

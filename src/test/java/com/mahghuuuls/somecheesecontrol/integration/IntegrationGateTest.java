@@ -69,8 +69,7 @@ class IntegrationGateTest {
                 detectOnly.add(entry.modId);
             }
         }
-        // Spartan Shields leaves this list when its integration gets an entry class.
-        assertEquals(Arrays.asList("spartanweaponry", "spartanshields", "bettercombatmod", "jass", "jawms"), detectOnly);
+        assertEquals(Arrays.asList("spartanweaponry", "bettercombatmod", "jass", "jawms"), detectOnly);
     }
 
     /** The integration package of a mod: its mod id, except Wizardry's ({@code ebwizardry}), named {@code wizardry} in the architecture. */

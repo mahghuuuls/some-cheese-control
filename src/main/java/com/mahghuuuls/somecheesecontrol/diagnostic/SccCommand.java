@@ -88,12 +88,15 @@ public final class SccCommand extends CommandBase {
     private static List<String> status() {
         Settings settings = Settings.get();
         List<String> integrations = new ArrayList<>();
-        boolean spartanShields = false;
+        String shieldBash = StatusReport.shieldBash(false, false, Collections.<String>emptyList());
         for (IntegrationGate.Record record : IntegrationGate.records()) {
             integrations.add(StatusReport.integration(record.name(), stateText(record.state()), record.problems()));
-            spartanShields |= record.modId().equals("spartanshields") && record.state() != IntegrationGate.State.ABSENT;
+            if (record.modId().equals("spartanshields")) {
+                shieldBash = StatusReport.shieldBash(record.state() != IntegrationGate.State.ABSENT,
+                        record.state() == IntegrationGate.State.ACTIVE && record.problems().isEmpty(), record.problems());
+            }
         }
-        return StatusReport.lines(settings.featureSwitches(), settings.valueLines(), integrations, StatusReport.shieldBash(spartanShields),
+        return StatusReport.lines(settings.featureSwitches(), settings.valueLines(), integrations, shieldBash,
                 OriginalMods.installed(), settings.problems().errors(), settings.problems().warnings());
     }
 

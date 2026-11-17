@@ -60,7 +60,7 @@ final class Options {
             new String[0],
             "Items that cannot be used in any way while on a ladder or vine above the ground and for the release delay after letting go: right click in the air, on a block or on an entity, or holding use. One modid:name per line; empty by default. Example: minecraft:lead. Used only when enabled is true. Restart required.");
     static final BooleanOption CLIMBING_MELEE = new BooleanOption(CLIMBING_MELEE_CATEGORY, "enabled", true,
-            "Refuse melee attacks, with either hand, while on a ladder or vine above the ground and for the release delay after letting go. Restart required.");
+            "Refuse melee attacks, with either hand, while on a ladder or vine above the ground and for the release delay after letting go. With Spartan Shields, also refuses the shield bash (on standard Forge only with MixinBooter). Restart required.");
     static final BooleanOption CLIMBING_ITEM_BLOCKLIST = new BooleanOption(CLIMBING_ITEM_BLOCKLIST_CATEGORY, "enabled", true,
             "Refuse every use of the items in the list below while climbing. With an empty list this adds nothing. Restart required.");
     static final BooleanOption VEHICLE_FALL = new BooleanOption(VEHICLE_FALL_CATEGORY, "enabled", true,

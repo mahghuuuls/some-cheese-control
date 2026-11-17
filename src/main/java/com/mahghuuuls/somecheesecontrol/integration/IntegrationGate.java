@@ -34,11 +34,17 @@ public final class IntegrationGate {
     static final List<Entry> ENTRIES = Collections.unmodifiableList(Arrays.asList(
             new Entry("ebwizardry", "Electroblob's Wizardry", "com.mahghuuuls.somecheesecontrol.integration.wizardry.WizardryIntegration"),
             new Entry("spartanweaponry", "Spartan Weaponry", null),
-            new Entry("spartanshields", "Spartan Shields", null),
+            new Entry("spartanshields", "Spartan Shields", "com.mahghuuuls.somecheesecontrol.integration.spartanshields.SpartanShieldsIntegration"),
             new Entry("bettercombatmod", "RLCombat", null),
             new Entry("comforts", "Comforts", "com.mahghuuuls.somecheesecontrol.integration.comforts.ComfortsIntegration"),
             new Entry("jass", "JASS", null),
             new Entry("jawms", "JAWMS", null)));
+
+    /**
+     * The start of an integration's note that says why it does not act (a switch is off, a Mixin is
+     * missing); the status command shows the rest of the note where only the reason fits.
+     */
+    public static final String INACTIVE = "inactive: ";
 
     private static final Map<String, Record> RECORDS = new LinkedHashMap<>();
 

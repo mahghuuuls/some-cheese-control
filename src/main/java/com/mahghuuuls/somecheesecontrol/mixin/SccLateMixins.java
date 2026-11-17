@@ -4,7 +4,7 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
 import zone.rong.mixinbooter.ILateMixinLoader;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -16,14 +16,21 @@ import java.util.List;
 public final class SccLateMixins implements ILateMixinLoader {
 
     private static final String RLCOMBAT_CONFIG = "mixins.somecheesecontrol.rlcombat.json";
+    private static final String SPARTAN_SHIELDS_CONFIG = "mixins.somecheesecontrol.spartanshields.json";
 
     @Override
     public List<String> getMixinConfigs() {
-        return Collections.singletonList(RLCOMBAT_CONFIG);
+        return Arrays.asList(RLCOMBAT_CONFIG, SPARTAN_SHIELDS_CONFIG);
     }
 
     @Override
     public boolean shouldMixinConfigQueue(String mixinConfig) {
-        return !RLCOMBAT_CONFIG.equals(mixinConfig) || (FMLLaunchHandler.side().isClient() && Loader.isModLoaded("bettercombatmod"));
+        if (RLCOMBAT_CONFIG.equals(mixinConfig)) {
+            return FMLLaunchHandler.side().isClient() && Loader.isModLoaded("bettercombatmod");
+        }
+        if (SPARTAN_SHIELDS_CONFIG.equals(mixinConfig)) {
+            return Loader.isModLoaded("spartanshields");
+        }
+        return true;
     }
 }

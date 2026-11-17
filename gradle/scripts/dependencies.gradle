@@ -41,6 +41,10 @@ dependencies {
     // Electroblob's Wizardry 4.3.19 (CurseForge project 265642, file 8320066,
     //   SHA-256 8a7f94dbccac622febff5111f3b3c2ba439e1d2b2c743f2a5c31fdfcd92d241c), compile only: integration.wizardry
     compileOnly rfg.deobf('curse.maven:electroblobs-wizardry-265642:8320066')
+    // Spartan Shields 1.12.2-1.5.5 (CurseForge project 252239, file 3567495,
+    //   SHA-256 46b58f509e9023adda3ac087031ebd60acc9db8177125cd197a33099b8eea603), compile only:
+    //   the bash Mixin target and integration.spartanshields
+    compileOnly rfg.deobf('curse.maven:spartan-shields-252239:3567495')
     // Include OSXNarratorBlocker by default for the dev env, for M1+ Macs
     runtimeOnly 'com.cleanroommc:osxnarratorblocker:1.0'
 

@@ -1,5 +1,7 @@
 package com.mahghuuuls.somecheesecontrol.diagnostic;
 
+import com.mahghuuuls.somecheesecontrol.integration.IntegrationGate;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -55,8 +57,25 @@ final class StatusReport {
         return name + ": " + state + (notes.isEmpty() ? "" : " (" + String.join("; ", notes) + ")");
     }
 
-    /** The shield-bash refusal: this version has no shield-bash refusal yet. */
-    static String shieldBash(boolean spartanShieldsInstalled) {
-        return spartanShieldsInstalled ? "not active (not part of this version)" : "not active (Spartan Shields not installed)";
+    /**
+     * The shield-bash refusal: active when the Spartan Shields integration started with no notes;
+     * otherwise not active, with the integration's notes (the switch is off, the Mixin is missing,
+     * or the integration failed).
+     */
+    static String shieldBash(boolean spartanShieldsInstalled, boolean active, List<String> notes) {
+        if (!spartanShieldsInstalled) {
+            return "not active (Spartan Shields not installed)";
+        }
+        if (active) {
+            return "active";
+        }
+        if (notes.isEmpty()) {
+            return "not active";
+        }
+        List<String> reasons = new ArrayList<>();
+        for (String note : notes) {
+            reasons.add(note.startsWith(IntegrationGate.INACTIVE) ? note.substring(IntegrationGate.INACTIVE.length()) : note);
+        }
+        return "not active (" + String.join("; ", reasons) + ")";
     }
 }

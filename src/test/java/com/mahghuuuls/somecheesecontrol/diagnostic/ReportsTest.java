@@ -1,5 +1,7 @@
 package com.mahghuuuls.somecheesecontrol.diagnostic;
 
+import com.mahghuuuls.somecheesecontrol.integration.IntegrationGate;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -22,7 +24,7 @@ class ReportsTest {
         features.put("bedExplosion", false);
         List<String> lines = StatusReport.lines(features, Arrays.asList("general.diagnosticLogging = false"),
                 Arrays.asList(StatusReport.integration("Comforts", "installed, integration active", Collections.<String>emptyList())),
-                StatusReport.shieldBash(false), Arrays.asList("Hold that Bucket!"),
+                StatusReport.shieldBash(false, false, Collections.<String>emptyList()), Arrays.asList("Hold that Bucket!"),
                 Arrays.asList("handOnlyCarrying.allowedHand = none allows no hand; using either"),
                 Arrays.asList("handOnlyCarrying.items: no item \"nosuchmod:thing\" is registered; skipped"));
         String text = String.join("\n", lines);
@@ -38,17 +40,27 @@ class ReportsTest {
     @Test
     void anEmptyStatusSaysSo() {
         List<String> lines = StatusReport.lines(new LinkedHashMap<String, Boolean>(), Collections.<String>emptyList(),
-                Collections.<String>emptyList(), StatusReport.shieldBash(true), Collections.<String>emptyList(),
+                Collections.<String>emptyList(), StatusReport.shieldBash(true, true, Collections.<String>emptyList()), Collections.<String>emptyList(),
                 Collections.<String>emptyList(), Collections.<String>emptyList());
         assertTrue(lines.contains("Original mods: none installed"), lines.toString());
         assertTrue(lines.contains("Configuration problems: none"), lines.toString());
-        assertTrue(lines.contains("Shield bash refusal: not active (not part of this version)"), lines.toString());
+        assertTrue(lines.contains("Shield bash refusal: active"), lines.toString());
+    }
+
+    @Test
+    void anInactiveShieldBashRefusalNamesWhy() {
+        assertEquals("not active (MixinBooter is not installed)",
+                StatusReport.shieldBash(true, false, Collections.singletonList(IntegrationGate.INACTIVE + "MixinBooter is not installed")));
+        assertEquals("not active", StatusReport.shieldBash(true, false, Collections.<String>emptyList()));
+        assertEquals("not active (failed: java.lang.IllegalStateException)",
+                StatusReport.shieldBash(true, false, Collections.singletonList("failed: java.lang.IllegalStateException")));
+        assertEquals("not active (Spartan Shields not installed)", StatusReport.shieldBash(false, true, Collections.<String>emptyList()));
     }
 
     @Test
     void anIntegrationNoteIsShown() {
         assertEquals("Comforts: installed, integration active (inactive: bed-explosion prevention is off)",
-                StatusReport.integration("Comforts", "installed, integration active", Arrays.asList("inactive: bed-explosion prevention is off")));
+                StatusReport.integration("Comforts", "installed, integration active", Arrays.asList(IntegrationGate.INACTIVE + "bed-explosion prevention is off")));
     }
 
     @Test

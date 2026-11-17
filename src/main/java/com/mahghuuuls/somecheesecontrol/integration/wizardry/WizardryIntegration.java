@@ -36,7 +36,7 @@ public final class WizardryIntegration implements IntegrationGate.Integration {
         if (Settings.get().climbingWizardry()) {
             MinecraftForge.EVENT_BUS.register(new CastingRefusal());
         } else {
-            problems.add("inactive: climbing Wizardry refusal is off");
+            problems.add(IntegrationGate.INACTIVE + "climbing Wizardry refusal is off");
         }
     }
 
