@@ -1,6 +1,7 @@
 package com.mahghuuuls.somecheesecontrol.config;
 
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -81,6 +82,18 @@ class SettingsTest {
         for (MessageText message : MessageText.values()) {
             assertEquals(message.defaultText(), defaults.message(message));
         }
+    }
+
+    @Test
+    void bedMessageSaysOnlyThatTheBedCannotBeUsed() {
+        assertEquals("You cannot use a bed here.", MessageText.BED_EXPLOSION.defaultText(),
+                "the bed message names the refused action, without the reason");
+        Configuration config = new Configuration();
+        assertEquals("You cannot use a bed here.", Settings.read(config).message(MessageText.BED_EXPLOSION),
+                "a file without the key gets the default");
+        Property written = config.getCategory("general.messageTexts").get("bedExplosion");
+        assertEquals("You cannot use a bed here.", written.getString(), "the configuration Forge would write holds the default");
+        assertTrue(written.getComment().contains("[default: You cannot use a bed here.]"), written.getComment());
     }
 
     @Test
