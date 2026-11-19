@@ -44,7 +44,7 @@ final class Options {
             "Refuse emptying a bucket while in the air: jumping, falling, holding on to a ladder above air, or riding a vehicle that is in the air. Swimming and standing on the ground are fine. Filling a bucket is never refused. Restart required.");
 
     static final BooleanOption CARRYING = new BooleanOption(CARRYING_CATEGORY, "enabled", true,
-            "Drop the listed items when they are anywhere in the player's inventory except an allowed hand. Backpacks and chests are not checked. Restart required.");
+            "Keep the listed items in an allowed hand. Screens other than the Creative inventory do not let them be placed anywhere else in the player's inventory. A listed item anywhere else (after switching hotbar slots, from a command, or filled from a stack) moves into the offhand when the offhand is allowed and empty, and is dropped otherwise. One on the ground is picked up only into an empty allowed hand. Backpacks and chests are not checked. Restart required.");
     static final StringListOption CARRIED_ITEMS = new StringListOption(CARRYING_CATEGORY, "items",
             new String[] {"minecraft:water_bucket", "minecraft:lava_bucket"},
             "Items that may only be carried in an allowed hand, one modid:name per line. Example: minecraft:water_bucket. Restart required.");
