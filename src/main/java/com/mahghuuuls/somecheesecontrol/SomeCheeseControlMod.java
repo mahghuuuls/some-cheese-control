@@ -18,14 +18,17 @@ import com.mahghuuuls.somecheesecontrol.feature.vehiclefall.VehicleFallTracker;
 import com.mahghuuuls.somecheesecontrol.integration.IntegrationGate;
 import com.mahghuuuls.somecheesecontrol.integration.originalmods.OriginalMods;
 import com.mahghuuuls.somecheesecontrol.network.Network;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -105,6 +108,15 @@ public class SomeCheeseControlMod {
     public void serverStarting(FMLServerStartingEvent event) {
         ServerState.reset();
         event.registerServerCommand(new SccCommand());
+    }
+
+    @Mod.EventHandler
+    public void serverStopping(FMLServerStoppingEvent event) {
+        // Fired before the server saves at a stop; the per-server state is reset only after it.
+        MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+        if (server != null) {
+            VehicleFallTracker.releaseAll(server.getPlayerList().getPlayers());
+        }
     }
 
     @Mod.EventHandler

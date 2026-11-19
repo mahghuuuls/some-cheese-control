@@ -12,6 +12,7 @@ import net.minecraft.entity.item.EntityMinecart;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
@@ -41,13 +42,13 @@ import javax.annotation.Nullable;
  * <p>A minecart already passes its fall to its rider when it lands off rails, and rails and water
  * reset it. So the pending fall of a player boarding a minecart is added to the minecart's own fall,
  * and the game does the rest. When the tracking ends any other way, the added part is taken back
- * out, so the minecart (which the game saves with a logged-out player) keeps only its own fall.</p>
+ * out, so the minecart (which the game saves with its rider and in its chunk) keeps only its own fall.</p>
  *
  * <p>A pending fall goes on when the player leaves the vehicle in the air (it becomes the player's
  * own fall) or boards another vehicle (the new boarding takes the old vehicle's fall). It is gone
- * after a teleport, a dimension change, death, logout, or in Creative or Spectator. A fall reaches
- * the player once: when the game already passed a fall to the player in the same tick (another mod
- * breaking the boat on landing), none is added.</p>
+ * after a teleport, a dimension change, death, logout, an orderly server stop, or in Creative or
+ * Spectator. A fall reaches the player once: when the game already passed a fall to the player in
+ * the same tick (another mod breaking the boat on landing), none is added.</p>
  *
  * <p>Inside one server tick, movement packets (a player-steered boat moves here) come first, then
  * the world's entities (minecarts, boats steered by nobody), then each player's tick, where this
@@ -347,9 +348,28 @@ public final class VehicleFallTracker {
         if (vehicle != null) {
             takeBackPending(entry, vehicle);
         }
+        // A boarding that never settled, while the player still rides the minecart of the record
+        // before it: that minecart keeps the added fall until it is taken back here. Once the player
+        // has left it, the leaving already took the fall back out.
+        Entity ridden = player.getRidingEntity();
+        if (entry.previous != null && ridden != null && ridden.getUniqueID().equals(entry.previous.vehicle)) {
+            takeBackPending(entry.previous, ridden);
+        }
         falls().byPlayer.remove(player.getUniqueID());
         if (fall >= VehicleFallRules.MIN_FALL) {
             log("fall-cleared", player, fall, "reason", reason);
+        }
+    }
+
+    /**
+     * At an orderly server stop, before the game saves: ends every tracked ride, so a minecart is
+     * saved with only its own fall and a pending fall does not outlive the server. The stop saves the
+     * players (a ridden minecart with them) and the chunks without logging the players out first, so
+     * the logout path does not run in time on a dedicated server.
+     */
+    public static void releaseAll(Iterable<EntityPlayerMP> online) {
+        for (EntityPlayerMP player : online) {
+            forget(player, "server stopping");
         }
     }
 
@@ -362,10 +382,18 @@ public final class VehicleFallTracker {
         falls.lastFallTick.remove(player.getUniqueID());
     }
 
-    /** A minecart keeps only its own fall once the tracker no longer follows its rider. */
+    /**
+     * A minecart keeps only its own fall once the tracker no longer follows its rider. Its chunk is
+     * marked changed, so a save after this one writes the corrected minecart too.
+     */
     private static void takeBackPending(Entry entry, Entity vehicle) {
         if (entry.phase == Phase.MINECART && vehicle.getUniqueID().equals(entry.vehicle)) {
             vehicle.fallDistance = VehicleFallRules.withoutPending(vehicle.fallDistance, entry.fall);
+            // The chunk the minecart is registered in is the one that saves it.
+            Chunk chunk = vehicle.addedToChunk ? vehicle.world.getChunkProvider().getLoadedChunk(vehicle.chunkCoordX, vehicle.chunkCoordZ) : null;
+            if (chunk != null) {
+                chunk.markDirty();
+            }
         }
     }
 
